@@ -54,8 +54,9 @@ public class Similarity {
     
     private long getSimilarity(long node_a, long node_b){
 /*      this.node_a = this.database.getNodeById(node_a);
-        this.node_b = this.database.getNodeById(node_b);
-*/
-        return node_a;
+        this.node_b = this.database.getNodeById(node_b); */
+        System.out.println("************* The server has processed: " + (node_a + node_b));
+        
+        return 5;
     }
 }
