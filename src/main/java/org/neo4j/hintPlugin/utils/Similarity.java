@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.neo4j.hintPlugin.utils;
+package org.neo4j.hintplugin.utils;
 
 import java.nio.charset.Charset;
 
@@ -33,26 +33,29 @@ import org.neo4j.graphdb.*;
 
 @Path( "/similarity" )
 public class Similarity {
+    
     private final GraphDatabaseService database;
+    private Node node_a;
+    private Node node_b;
 
     public Similarity( @Context GraphDatabaseService database ) {
         this.database = database;
     }
+    
     @GET
     @Produces( MediaType.TEXT_PLAIN )
-    @Path( "/{nodeA}/{nodeB}" )
-    public Response hello( @PathParam( "nodeA" ) long nodeA, @PathParam( "nodeB" ) long nodeB)
+    @Path( "/{node_a}/{node_b}" )
+    public Response similarity(@PathParam("node_a") long node_a, @PathParam("node_b") long node_b)
     {
         // Do stuff with the database
-    /*
-        Node node_a = database.getNodeById(nodeA);
-        Node node_b = database.getNodeById(nodeB);
-    */
-        return Response.status( Status.OK ).entity(
-                ("Similarity:"+this.getSimilarity()).getBytes( Charset.forName("UTF-8") ) ).build();
+        return Response.status(Status.OK).entity(
+                ("Similarity:"+this.getSimilarity(node_a, node_b)).getBytes(Charset.forName("UTF-8"))).build();
     }
     
-    private int getSimilarity(){
-        return 5;
+    private long getSimilarity(long node_a, long node_b){
+/*      this.node_a = this.database.getNodeById(node_a);
+        this.node_b = this.database.getNodeById(node_b);
+*/
+        return node_a;
     }
 }
