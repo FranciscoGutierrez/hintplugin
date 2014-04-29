@@ -33,7 +33,7 @@ import org.neo4j.graphdb.*;
 
 @Path( "/similarity" )
 public class Similarity {
-    
+
     private final GraphDatabaseService database;
     private Node node_a;
     private Node node_b;
@@ -53,8 +53,19 @@ public class Similarity {
     }
     
     private long getSimilarity(long node_a, long node_b){
-/*      this.node_a = this.database.getNodeById(node_a);
-        this.node_b = this.database.getNodeById(node_b); */
+        Transaction tx = database.beginTx();
+        try {
+            // Database operations go here
+            this.node_a = database.getNodeById(0);
+            this.node_b = database.getNodeById(1);
+            //System.out.println("PASSED NODE GOOD" + this.node_a.getProperty("name"));
+            tx.success();
+        } catch (Exception e) {
+            System.out.println("Error, Node Problem" + e);
+        } finally {
+             tx.close();
+        }
+        
         System.out.println("************* The server has processed: " + (node_a + node_b));
         
         return 5;
