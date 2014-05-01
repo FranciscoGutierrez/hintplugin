@@ -57,22 +57,30 @@ public class SimilarityTest {
         Transaction tx = db.beginTx();
         Node a = db.createNode();
         Node b = db.createNode();
+        Node c = db.createNode();
+        Node d = db.createNode();
         a.setProperty("name", "Mark");
-        b.setProperty("name", "Dave");
+        b.setProperty("name", "Travis");
+        c.setProperty("name", "Tom");
+        d.setProperty("name", "Scott");
+        /*
+        a.createRelationshipTo(c, MyRelationshipTypes.KNOWS);
+        a.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
+        b.createRelationshipTo(c, MyRelationshipTypes.KNOWS);
+        b.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
+        */
         
         a.createRelationshipTo(b, MyRelationshipTypes.KNOWS);
+        c.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
         
-        System.out.println("******"+ a.getId() + "" + "" + b.getId());
         tx.success();
         tx.close();
-
         int statusCode = 0;
         String node_a = "0";
-        String node_b = "1";
+        String node_b = "2";
         String address = server.baseUri().toString()+
                         "hintplugin/utils/similarity/"+
                         node_a + "/" + node_b;
-        
         try{
             URL url = new URL(address);
             HttpURLConnection http = (HttpURLConnection)url.openConnection();

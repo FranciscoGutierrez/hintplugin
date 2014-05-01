@@ -53,32 +53,39 @@ public class Similarity {
                 ("Similarity:"+this.getSimilarity(node_a, node_b)).getBytes(Charset.forName("UTF-8"))).build();
     }
     
-    private long getSimilarity(long node_a, long node_b){
-        long similarity = 0;
+    private double getSimilarity(long node_a, long node_b){
+        double similarity = 0.0f;
         Transaction tx = database.beginTx();
         try {
-            // Database operations go here
             this.node_a = database.getNodeById(node_a);
             this.node_b = database.getNodeById(node_b);
             
-            Iterable relationships_a = this.node_a.getRelationships();
-            Iterable relationships_b = this.node_b.getRelationships();
+            Iterable<Relationship> relationships_a = this.node_a.getRelationships();
+            Iterable<Relationship> relationships_b = this.node_b.getRelationships();
             
             int node_a_degree = IteratorUtil.count(relationships_a);
             int node_b_degree = IteratorUtil.count(relationships_b);
             
-            int node_union = node_a_degree + node_b_degree;
-            //int node_intersection =
+            double node_union = node_a_degree + node_b_degree;
+            double node_intersection = 0.0f;
             
-            System.out.println("************* The server has processed: " + node_a_degree + " - " + node_b_degree);
-            //System.out.println("PASSED NODE GOOD" + this.node_a.getProperty("name"));
+            for (Relationship a: this.node_a.getRelationships()){ //The starting node is a*
+                for (Relationship b: this.node_b.getRelationships()){ //The starting node is b*
+                    if(a.getEndNode().getId() == b.getEndNode().getId())
+                        node_intersection++;
+                }
+            }
+            similarity = (node_intersection)/(node_union - node_intersection);
+            
+            System.out.println("*************        Union: " + node_union);
+            System.out.println("************* Intersection: " + node_intersection);
+            System.out.println("*************   Similarity: " + similarity);
             tx.success();
         } catch (Exception e) {
             System.out.println("Fail, This happened: " + e);
         } finally {
              tx.close();
         }
-        
-        return 5;
+        return similarity;
     }
 }
