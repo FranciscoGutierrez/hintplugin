@@ -51,11 +51,13 @@ public class Similarity {
     @GET
     @Produces( MediaType.TEXT_PLAIN )
     @Path( "/{node_a}/{node_b}" )
-    public Response similarity(@PathParam("node_a") long node_a, @PathParam("node_b") long node_b)
-    {
+    public Response similarity(@PathParam("node_a") long node_a, @PathParam("node_b") long node_b) {
         // Do stuff with the database
-        return Response.status(Status.OK).entity(
+/*        return Response.status(Status.OK).entity(
                 ("json {" + this.getSimilarity(node_a, node_b)).getBytes(Charset.forName("UTF-8"))).build();
+*/
+        String json = "{\"similarity\":" + this.getSimilarity(node_a, node_b) + "}";
+        return Response.ok(json, MediaType.APPLICATION_JSON).build();
     }
     
     private double getSimilarity(long node_a, long node_b){
