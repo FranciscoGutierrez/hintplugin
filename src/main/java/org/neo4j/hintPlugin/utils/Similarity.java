@@ -39,6 +39,11 @@ public class Similarity {
     private Node node_a;
     private Node node_b;
 
+    enum MyRelationshipTypes implements RelationshipType
+    {
+        KNOWS, IS_SIMILAR
+    }
+    
     public Similarity( @Context GraphDatabaseService database ) {
         this.database = database;
     }
@@ -50,7 +55,7 @@ public class Similarity {
     {
         // Do stuff with the database
         return Response.status(Status.OK).entity(
-                ("Similarity:"+this.getSimilarity(node_a, node_b)).getBytes(Charset.forName("UTF-8"))).build();
+                ("json {" + this.getSimilarity(node_a, node_b)).getBytes(Charset.forName("UTF-8"))).build();
     }
     
     private double getSimilarity(long node_a, long node_b){
@@ -76,7 +81,10 @@ public class Similarity {
                 }
             }
             similarity = (node_intersection)/(node_union - node_intersection);
-            
+            if(similarity >= 0.5){
+                this.node_a.createRelationshipTo(this.node_b, MyRelationshipTypes.IS_SIMILAR);
+                System.out.println("*************   Warning: Relationship Created ");
+            }
             System.out.println("*************        Union: " + node_union);
             System.out.println("************* Intersection: " + node_intersection);
             System.out.println("*************   Similarity: " + similarity);

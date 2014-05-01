@@ -59,25 +59,27 @@ public class SimilarityTest {
         Node b = db.createNode();
         Node c = db.createNode();
         Node d = db.createNode();
+        Node e = db.createNode();
+        Node f = db.createNode();
         a.setProperty("name", "Mark");
         b.setProperty("name", "Travis");
         c.setProperty("name", "Tom");
         d.setProperty("name", "Scott");
-        /*
+        e.setProperty("name", "Kevin");
+        f.setProperty("name", "Matt");
+        
         a.createRelationshipTo(c, MyRelationshipTypes.KNOWS);
         a.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
-        b.createRelationshipTo(c, MyRelationshipTypes.KNOWS);
+        a.createRelationshipTo(e, MyRelationshipTypes.KNOWS);
+        b.createRelationshipTo(e, MyRelationshipTypes.KNOWS);
         b.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
-        */
-        
-        a.createRelationshipTo(b, MyRelationshipTypes.KNOWS);
-        c.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
+        b.createRelationshipTo(f, MyRelationshipTypes.KNOWS);
         
         tx.success();
         tx.close();
         int statusCode = 0;
         String node_a = "0";
-        String node_b = "2";
+        String node_b = "1";
         String address = server.baseUri().toString()+
                         "hintplugin/utils/similarity/"+
                         node_a + "/" + node_b;
