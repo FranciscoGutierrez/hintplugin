@@ -15,6 +15,7 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.server.CommunityNeoServer;
 import org.neo4j.server.helpers.CommunityServerBuilder;
+import org.neo4j.graphdb.RelationshipType;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -27,6 +28,12 @@ import java.net.URL;
 public class SimilarityTest {
     private GraphDatabaseAPI db;
     private CommunityNeoServer server;
+    
+    enum MyRelationshipTypes implements RelationshipType
+    {
+        CONTAINED_IN, KNOWS
+    }
+    
     
     @Before
     public void before() throws IOException {
@@ -52,6 +59,8 @@ public class SimilarityTest {
         Node b = db.createNode();
         a.setProperty("name", "Mark");
         b.setProperty("name", "Dave");
+        
+        a.createRelationshipTo(b, MyRelationshipTypes.KNOWS);
         
         System.out.println("******"+ a.getId() + "" + "" + b.getId());
         tx.success();
