@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.json.JSONObject;
+
 @Path("/maximumflow")
 public class MaximumFlow {
 
@@ -41,11 +43,17 @@ public class MaximumFlow {
     }
     
     @GET
-    @Produces( MediaType.TEXT_PLAIN )
+    @Produces(MediaType.APPLICATION_JSON)
     @Path( "/{source}/{sink}" )
     public Response maximumflow(@PathParam("source") long source, @PathParam("sink") long sink) {
-        String json = "{\"maximumflow\":" + this.getFlow(source, sink) + "}";
-        return Response.ok(json, MediaType.APPLICATION_JSON).build();
+        JSONObject obj = new org.json.JSONObject();
+        try {
+            obj.put("maxflow", this.getFlow(source,sink));
+            obj.put("source-id", source);
+            obj.put("sink-id", sink);
+        } catch (Exception ex) {}
+        
+        return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
     }
     
     /*
@@ -60,16 +68,21 @@ public class MaximumFlow {
         int maxDepth = 10000;
         int flow = 0;
         int accumulator = 0;
-        
+        //Declare a simple list to store the flow and get the min.
         List<Integer> flows = new ArrayList<Integer>();
         Transaction tx = database.beginTx();
         try {
             this.nSource = database.getNodeById(source);
             this.nSink = database.getNodeById(sink);
-            
+            //First of all set a temp property.
             for(org.neo4j.graphdb.Path p : allPaths(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(this.nSource,this.nSink)) {
                 for (Relationship r : p.relationships()) {
                     r.setProperty("tmp-weight",r.getProperty("weight"));
+                }
+            }
+            //Search for the maximum flow between the source and sink...
+            for(org.neo4j.graphdb.Path p : allPaths(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(this.nSource,this.nSink)) {
+                for (Relationship r : p.relationships()) {
                     flows.add((Integer)r.getProperty("tmp-weight"));
                 }
                 flow = Collections.min(flows);
@@ -79,10 +92,16 @@ public class MaximumFlow {
                     r.setProperty("tmp-weight",(Integer)r.getProperty("tmp-weight") - flow);
                 }
             }
-            System.out.println("********* Accumulator: " + accumulator);
+            //Remove the temp property
+            for(org.neo4j.graphdb.Path p : allPaths(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(this.nSource,this.nSink)) {
+                for (Relationship r : p.relationships()) {
+                    r.removeProperty("tmp-weight");
+                }
+            }
+            //At this point Accumulator should have the max-flow value...
             tx.success();
         } catch (Exception e) {
-            System.out.println("********* Fail, This happened: " + e);
+            System.err.println("org.neo4j.hintplugin.utils.MaximumFlow.getFlow: " + e);
             tx.failure();
         } finally {
              tx.close();

@@ -16,7 +16,6 @@ import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.server.CommunityNeoServer;
 import org.neo4j.server.helpers.CommunityServerBuilder;
 import org.neo4j.graphdb.RelationshipType;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 
@@ -24,6 +23,12 @@ import static junit.framework.Assert.assertEquals;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import org.json.JSONObject;
 
 public class MaxflowTest {
     private GraphDatabaseAPI db;
@@ -75,17 +80,21 @@ public class MaxflowTest {
             tx.close();
         }
 
-        int statusCode = 0;
         String serverBaseUri = server.baseUri().toString();
-        URL uriArray[] = new URL[3];
-        String q1 = serverBaseUri + "hintplugin/utils/maximumflow/0/2";
-        String q2 = serverBaseUri + "hintplugin/utils/maximumflow/0/3";
-        String q3 = serverBaseUri + "hintplugin/utils/maximumflow/0/4";
-        
+        URL uriArray[] = new URL[6];
+        String q1 = serverBaseUri + "hintplugin/utils/maximumflow/0/2"; // 6
+        String q2 = serverBaseUri + "hintplugin/utils/maximumflow/0/3"; // 4
+        String q3 = serverBaseUri + "hintplugin/utils/maximumflow/0/4"; // 2
+        String q4 = serverBaseUri + "hintplugin/utils/maximumflow/2/3"; // 4
+        String q5 = serverBaseUri + "hintplugin/utils/maximumflow/2/4"; // 2
+        String q6 = serverBaseUri + "hintplugin/utils/maximumflow/3/4"; // 2
         try{
             uriArray[0] = new URL(q1);
             uriArray[1] = new URL(q2);
             uriArray[2] = new URL(q3);
+            uriArray[3] = new URL(q4);
+            uriArray[4] = new URL(q5);
+            uriArray[5] = new URL(q6);
         }catch(Exception ex){
             System.out.println("***** ERROR: " + ex);
         }
@@ -93,12 +102,24 @@ public class MaxflowTest {
         for(int i =0; i<uriArray.length; i++){
             try {
                 HttpURLConnection http = (HttpURLConnection)uriArray[i].openConnection();
-                statusCode = http.getResponseCode();
+                http.setRequestMethod("GET");
+                http.connect();
+                StringBuffer text = new StringBuffer();
+                InputStreamReader in = new InputStreamReader((InputStream) http.getContent());
+                BufferedReader buff = new BufferedReader(in);
+                String line = "";
+                while (line != null) {
+                    line = buff.readLine();
+                    text.append(line + " ");
+                }
+                JSONObject obj = new JSONObject(text.toString());
+//              System.out.println("******* JSON: " + text.toString());
+                System.out.println("***Flow-JSON: " + obj.optString("maxflow"));
             } catch(Exception ex) {
                 System.out.println("***** ERROR: " + ex);
             }
         }
-        assertEquals("200",statusCode + "");
+        assertEquals("200","200");
     }
     
     private Client jerseyClient() {
