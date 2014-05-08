@@ -12,7 +12,7 @@ Copy the generated **JAR File** at
 ```
 hintplugin/target/
 ```
-in **Neo4j Plugins Directory**.  
+into **Neo4j Plugins Directory**.  
 ```
 neo4j/plugins/  
 ```
