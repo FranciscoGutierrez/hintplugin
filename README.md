@@ -4,7 +4,7 @@ An unmanaged extension that enables Neo4j (2.0.1) to give recommeder system func
 
 Setting everything up!
 ----------------------
-Terminal:
+From terminal use Maven to build the project:
 ```
 mvn clean package
 ```  
