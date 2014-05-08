@@ -73,7 +73,7 @@ public class MaxflowTest {
         c.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2);
         c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",2);
         } catch (Exception e) {
-            System.out.println("********* Fail, This happened: " + e);
+            System.err.println("Exception Error: MaxflowTest.shouldReturnMaxFlow: " + e);
             tx.failure();
         } finally {
             tx.success();
@@ -98,7 +98,7 @@ public class MaxflowTest {
         }catch(Exception ex){
             System.out.println("***** ERROR: " + ex);
         }
-
+        //Establish a connection to the server and get Content.
         for(int i =0; i<uriArray.length; i++){
             try {
                 HttpURLConnection http = (HttpURLConnection)uriArray[i].openConnection();
@@ -116,7 +116,7 @@ public class MaxflowTest {
 //              System.out.println("******* JSON: " + text.toString());
                 System.out.println("***Flow-JSON: " + obj.optString("maxflow"));
             } catch(Exception ex) {
-                System.out.println("***** ERROR: " + ex);
+                System.out.println("MaxflowTest Exception: " + ex);
             }
         }
         assertEquals("200","200");
