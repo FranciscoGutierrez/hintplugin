@@ -13,6 +13,9 @@ Copy the generated **JAR File** at
 hintplugin/target/
 ```
 in **Neo4j Plugins Directory**.  
+```
+neo4j/plugins/  
+```
 **Warning:** Before continue stop the Neo4j Instance!  
 Then, in **conf/neo4j-server.properties** copy/paste the following:  
 ```
