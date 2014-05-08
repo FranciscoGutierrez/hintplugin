@@ -69,16 +69,17 @@ public class MaximumFlow {
             
             for(org.neo4j.graphdb.Path p : allPaths(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(this.nSource,this.nSink)) {
                 for (Relationship r : p.relationships()) {
-                    flows.add((Integer)r.getProperty("weight"));
+                    r.setProperty("tmp-weight",r.getProperty("weight"));
+                    flows.add((Integer)r.getProperty("tmp-weight"));
                 }
                 flow = Collections.min(flows);
                 flows.clear();
                 accumulator = accumulator + flow;
                 for (Relationship r: p.relationships()){
-                    r.setProperty("weight",(Integer)r.getProperty("weight") - flow);
+                    r.setProperty("tmp-weight",(Integer)r.getProperty("tmp-weight") - flow);
                 }
             }
-            System.out.println("*********         Accumulator: " + accumulator);
+            System.out.println("********* Accumulator: " + accumulator);
             tx.success();
         } catch (Exception e) {
             System.out.println("********* Fail, This happened: " + e);

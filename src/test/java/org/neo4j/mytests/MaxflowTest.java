@@ -55,52 +55,48 @@ public class MaxflowTest {
     @Test
     public void shouldReturnMaxFlow() {
         Transaction tx = db.beginTx();
+        try{
         Node a = db.createNode();
         Node b = db.createNode();
         Node c = db.createNode();
         Node d = db.createNode();
         Node e = db.createNode();
-        Node f = db.createNode();
-        
         a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",1);
         a.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight",3);
         a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2);
         b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",3);
         c.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2);
         c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",2);
-/*
-        Node s = db.createNode();
-        Node o = db.createNode();
-        Node p = db.createNode();
-        Node q = db.createNode();
-        Node r = db.createNode();
-        Node t = db.createNode();
-        
-        s.createRelationshipTo(o, MyRelationshipTypes.KNOWS).setProperty("weight",3);
-        s.createRelationshipTo(p, MyRelationshipTypes.KNOWS).setProperty("weight",3);
-        o.createRelationshipTo(p, MyRelationshipTypes.KNOWS).setProperty("weight",2);
-        o.createRelationshipTo(q, MyRelationshipTypes.KNOWS).setProperty("weight",3);
-        p.createRelationshipTo(r, MyRelationshipTypes.KNOWS).setProperty("weight",2);
-        r.createRelationshipTo(t, MyRelationshipTypes.KNOWS).setProperty("weight",3);
-        q.createRelationshipTo(r, MyRelationshipTypes.KNOWS).setProperty("weight",4);
-        q.createRelationshipTo(t, MyRelationshipTypes.KNOWS).setProperty("weight",2);
- */
-        tx.success();
-        tx.close();
+        } catch (Exception e) {
+            System.out.println("********* Fail, This happened: " + e);
+            tx.failure();
+        } finally {
+            tx.success();
+            tx.close();
+        }
 
         int statusCode = 0;
-        String node_a = "0";
-        String node_b = "4";
-        String address = server.baseUri().toString()+
-                        "hintplugin/utils/maximumflow/"+
-                        node_a + "/" + node_b;
+        String serverBaseUri = server.baseUri().toString();
+        URL uriArray[] = new URL[3];
+        String q1 = serverBaseUri + "hintplugin/utils/maximumflow/0/2";
+        String q2 = serverBaseUri + "hintplugin/utils/maximumflow/0/3";
+        String q3 = serverBaseUri + "hintplugin/utils/maximumflow/0/4";
         
         try{
-            URL url = new URL(address);
-            HttpURLConnection http = (HttpURLConnection)url.openConnection();
-            statusCode = http.getResponseCode();
-        } catch(Exception ex){
+            uriArray[0] = new URL(q1);
+            uriArray[1] = new URL(q2);
+            uriArray[2] = new URL(q3);
+        }catch(Exception ex){
+            System.out.println("***** ERROR: " + ex);
+        }
+
+        for(int i =0; i<uriArray.length; i++){
+            try {
+                HttpURLConnection http = (HttpURLConnection)uriArray[i].openConnection();
+                statusCode = http.getResponseCode();
+            } catch(Exception ex) {
                 System.out.println("***** ERROR: " + ex);
+            }
         }
         assertEquals("200",statusCode + "");
     }

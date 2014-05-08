@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Path("/closeness")
-public class FlowCloseness {
+public class Closeness {
 
     private final GraphDatabaseService database;
     private Node nSource;
@@ -36,7 +36,7 @@ public class FlowCloseness {
         KNOWS, IS_SIMILAR
     }
 
-    public FlowCloseness( @Context GraphDatabaseService database ) {
+    public Closeness( @Context GraphDatabaseService database ) {
         this.database = database;
     }
     
