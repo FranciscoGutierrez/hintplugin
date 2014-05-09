@@ -114,7 +114,7 @@ public class MaxflowTest {
                 }
                 JSONObject obj = new JSONObject(text.toString());
 //              System.out.println("******* JSON: " + text.toString());
-                System.out.println("***Flow-JSON: " + obj.optString("maxflow"));
+                System.out.println("***Flow-JSON: " + obj.optDouble("maxflow"));
             } catch(Exception ex) {
                 System.out.println("MaxflowTest Exception: " + ex);
             }
