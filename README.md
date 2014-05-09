@@ -18,10 +18,9 @@ neo4j/plugins/
 ```
 **Warning:** Before continue stop the Neo4j Instance!  
 Then, in **conf/neo4j-server.properties** copy/paste the following:  
-```
-org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.hintplugin.utils=/hintplugin/utils
-```
-
+```  
+org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.hintplugin.utils=/hintplugin/utils  
+```  
 **Start** Neo4j Sever...  
 Have Fun!
 
@@ -32,4 +31,4 @@ What can I do?
 - Freeman Centralities.
 - Freeman Flow-Centralities.
 
-**Warning, bugs ahead.** We are still under development...
+**Warning...** Still under development...
