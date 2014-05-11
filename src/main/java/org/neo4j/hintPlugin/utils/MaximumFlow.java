@@ -1,7 +1,7 @@
 /**
  * Maximum Flow Class
  * Returns the Maximum flow value within a graph given a source and sink nodes.
- * @author  Francisco Gutiérrez.
+ * @author  Francisco Gutiérrez. (fsalvador23@gmail.com)
  * @version 0.1
  * @since 2014-05-01
  */
@@ -61,7 +61,7 @@ public class MaximumFlow {
         double flow = 0.0d;
         double accumulator = 0.0d;
         double min = Double.MAX_VALUE;
-        String uuid = UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString(); //For sake of process uniqueness
         //Declare a simple list to store the flow and get the min.
         List<Double> flows = new ArrayList<Double>();
         Transaction tx = database.beginTx();
