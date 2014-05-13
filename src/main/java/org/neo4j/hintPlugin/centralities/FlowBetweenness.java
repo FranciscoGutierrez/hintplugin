@@ -17,8 +17,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.neo4j.graphdb.*;
 
-import org.neo4j.tooling.GlobalGraphOperations
+import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.hintplugin.utils.MaximumFlow;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.lang.Thread;
 
 @Path("/flowbetweenness")
 public class FlowBetweenness {
@@ -37,17 +41,36 @@ public class FlowBetweenness {
      * Calculates the FlowBetweeness given a source and sink nodes.
      * @param target    the target node...
      */
-    private double getFlowBetweenness(long targetNode){
-                    Node tnode = database.getNodeById(targetNode);
-        MaximumFlow maxflow    = new MaximumFlow(database);
-        List <double> maxflows = new ArrayList<double>;
-        List <double> tflow    = new ArrayList<double>;
-        for(Node n : GlobalGraphOperations.at(database).getAllNodes()){
-            betweenness = maxflow.getFlow(0,1);
+    public double getFlowBetweenness(long targetNodeId){
+        Node        tnode    = database.getNodeById(targetNodeId);
+        final MaximumFlow maxflow  = new MaximumFlow(database);
+        List <Node>     flowNode = new ArrayList<Node>();
+        final List <Double>   maxflows = new ArrayList<Double>();
+        List <Double>   tflow    = new ArrayList<Double>();
+        
+        Iterable<Node> allGraphNodes = GlobalGraphOperations.at(database).getAllNodes();
+        for(Node n : allGraphNodes){
+            if(database.getNodeById(targetNodeId).getId() != n.getId()) {
+                flowNode.add(n);
+            }
+        }
+        for(final Node source: flowNode){
+            for(final Node sink: flowNode){
+                if((source.getId()!= sink.getId())
+                    && (source.getId() != targetNodeId)
+                    && (sink.getId() != targetNodeId)){
+                    Thread t = new Thread() {
+                        public void run() {
+                            maxflows.add(maxflow.getFlow(source.getId(),sink.getId())); //Running Thread smoothly...
+                        }
+                    };
+                    t.start();
+                }
+            }
         }
         return 0;
     }
-    private double getFlowBetweenness(long targetNode, long nodeNetwork){
+    private double getFlowBetweenness(long targetNodeId, long nodeLocalNetwork){
         return 0;
     }
 }

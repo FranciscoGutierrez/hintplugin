@@ -28,16 +28,29 @@ import java.util.UUID;
 
 @Path("/maximumflow")
 public class MaximumFlow {
+    
     private final GraphDatabaseService database;
     private Node nSource;
     private Node nSink;
-    public MaximumFlow( @Context GraphDatabaseService database ) {
+    public int maxDepth = 10000;
+    private Iterable<P> pList;
+    private Map<long, double> nodeFlows;
+    
+    public MaximumFlow(@Context GraphDatabaseService database) {
         this.database = database;
     }
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path( "/{source}/{sink}" )
     public Response maximumflow(@PathParam("source") long source, @PathParam("sink") long sink) {
+        
+        this.nSource = database.getNodeById(source);
+        this.nSink = database.getNodeById(sink);
+        
+        pList = allSimplePaths(expanderForAllTypes(Direction.BOTH),maxDepth)
+        .findAllPaths(this.nSource,this.nSink);
+        
         JSONObject obj = new org.json.JSONObject();
         try {
             obj.put("maxflow", this.getFlow(source,sink));
@@ -48,7 +61,28 @@ public class MaximumFlow {
         }
         return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
     }
-    
+    /*
+     * assignTempProperty
+     * @param String uuid;
+     */
+    private void assignTempProperty(UUID uuid){
+        for(org.neo4j.graphdb.Path p : pList) {
+            for (Relationship r : p.relationships()) {
+                r.setProperty("flw-"+this.uuid.toString(),r.getProperty("weight"));
+            }
+        }
+    }
+    /*
+     * removeTempProperty
+     * @param UUID uuid;
+     */
+    private void removeTempProperty(UUID uuid) {
+        for(org.neo4j.graphdb.Path p : pList) {
+            for (Relationship r : p.relationships()) {
+                r.removeProperty("flw-"+ this.uuid.toString());
+            }
+        }
+    }
     /*
      * Calculates the MaximumFlow given a source and sink nodes.
      *
@@ -56,29 +90,22 @@ public class MaximumFlow {
      * @param sink      the sink node id
      * @return double   as the maximum flow value.
      */
-    private double getFlow(long source, long sink){
-        int    maxDepth = 10000;
+    public double getFlow(long source, long sink){
         double flow = 0.0d;
         double accumulator = 0.0d;
         double min = Double.MAX_VALUE;
-        String uuid = UUID.randomUUID().toString(); //For sake of process uniqueness
+        nodeFlows = new HashMap<long, double>();
+        //For sake of process uniqueness
         //Declare a simple list to store the flow and get the min.
         List<Double> flows = new ArrayList<Double>();
         Transaction tx = database.beginTx();
         try {
-            this.nSource = database.getNodeById(source);
-            this.nSink = database.getNodeById(sink);
-            //First of all set a temp property.
-            for(org.neo4j.graphdb.Path p : allSimplePaths(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(this.nSource,this.nSink)) {
-                for (Relationship r : p.relationships()) {
-                    r.setProperty("flw-"+uuid,r.getProperty("weight"));
-                }
-            }
+            this.assignTempProperty(UUID.randomUUID());
             //Search for the maximum flow between the source and sink...
             for(org.neo4j.graphdb.Path p : allSimplePaths(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(this.nSource,this.nSink)) {
                 //Look for all the properties and put them into a List
                 for (Relationship r : p.relationships()) {
-                    flows.add((Double)r.getProperty("flw-"+uuid));
+                    flows.add((Double)r.getProperty("flw-"+this.uuid));
                 }
                 /*
                  * Calculate the min, because:
@@ -93,21 +120,14 @@ public class MaximumFlow {
                 accumulator = accumulator + flow;
                 // Setup the flow values for the next round...
                 for (Relationship r: p.relationships()){
-                    r.setProperty("flw-"+uuid,(Double)r.getProperty("flw-"+uuid) - flow);
+                    r.setProperty("flw-"+this.uuid,(Double)r.getProperty("flw-"+ this.uuid) - flow);
                 }
                 // Save the flow...
                 for(Node n : p.nodes()){
-                    if(n.getId() == 1)
                         System.out.println("Flow: " + flow + " : " + n.getId());
                 }
             }
-            //Remove the temp property
-            for(org.neo4j.graphdb.Path p : allSimplePaths(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(this.nSource,this.nSink)) {
-                for (Relationship r : p.relationships()) {
-                    r.removeProperty("flw-"+uuid);
-                }
-            }
-            //At this point Accumulator should have the max-flow value...
+            this.removeTempProperty(UUID.randomUUID());
             tx.success();
         } catch (Exception e) {
             System.err.println("org.neo4j.hintplugin.utils.MaximumFlow.getFlow: " + e);
