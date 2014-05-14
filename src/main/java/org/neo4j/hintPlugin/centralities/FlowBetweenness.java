@@ -23,7 +23,7 @@ import org.neo4j.graphdb.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.lang.Thread;
+import java.lang.Runnable;
 
 import org.json.JSONObject;
 
@@ -46,21 +46,20 @@ public class FlowBetweenness {
             obj.put("flow-betweenness", this.getFlowBetweenness(target));
             obj.put("target-node",      target);
         } catch (Exception ex) {
-            System.err.println("MaximumFlowService: " + ex);
+            System.err.println("centralities.FlowBetweenness Class: " + ex);
         }
         return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
     }
     /*
      * Calculates the FlowBetweeness given a source and sink nodes.
      * @param target: The target node to get the centrality...
-     *
      */
     public double getFlowBetweenness(long targetNodeId){
         double maxFlowSum   = 0.0;
         double flowSum      = 0.0;
         double betweenness  = 0.0;
         Transaction tx = database.beginTx();
-        try{
+        try {
             Node                    targetNode  = database.getNodeById(targetNodeId);
             MaximumFlow             maxflowObj  = new MaximumFlow(database);
             Iterable    <Node>      allNodes    = GlobalGraphOperations.at(database).getAllNodes();
@@ -74,13 +73,6 @@ public class FlowBetweenness {
                         //Running Thread smoothly...
                         maxFlowSum  =  maxflowObj.getMaxFlow(source.getId(),sink.getId(),targetNodeId) + maxFlowSum;
                         flowSum     =  maxflowObj.getTargetNodeFlow() + flowSum;
-                        /*
-                         Thread t = new Thread() {
-                         public void run() {
-                         maxflows.add(maxflow.getMaxFlow(source.getId(),sink.getId(),0)); //Running Thread smoothly...
-                         }
-                         };
-                         t.start();*/
                     }
                 }
             }

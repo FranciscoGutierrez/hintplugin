@@ -62,18 +62,12 @@ public class BetweennessTest {
             Node c = db.createNode();
             Node d = db.createNode();
             Node e = db.createNode();
-            a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",1.0);
-            a.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight",3.0);
-            a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
-            b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",3.0);
-            c.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
-            c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
-            
-            Iterable <Node> allNodeList = GlobalGraphOperations.at(db).getAllNodes();
-            
-            for (Node n : allNodeList) {
-                System.out.println("****The node is: " + n.getId());
-            }
+            a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",0.1);
+            a.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight",0.3);
+            a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",0.2);
+            b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",0.3);
+            c.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",0.2);
+            c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",0.2);
             
         } catch (Exception e) {
             System.err.println("Exception Error: MaxflowTest.shouldReturnMaxFlow: " + e);
@@ -82,32 +76,43 @@ public class BetweennessTest {
             tx.success();
             tx.close();
         }
-        URL centralityURL = null;
+        URL uriArray[] = new URL[5];
+        String serverBaseUri = server.baseUri().toString();
         try{
-            String serverBaseUri = server.baseUri().toString();
-            String q1 = serverBaseUri + "hintplugin/centralities/flowbetweenness/1";// 0.25 - 0.35
-            centralityURL = new URL(q1);
+            String q1 = serverBaseUri + "hintplugin/centralities/flowbetweenness/0";
+            String q2 = serverBaseUri + "hintplugin/centralities/flowbetweenness/1";// 0.3599
+            String q3 = serverBaseUri + "hintplugin/centralities/flowbetweenness/2";
+            String q4 = serverBaseUri + "hintplugin/centralities/flowbetweenness/3";
+            String q5 = serverBaseUri + "hintplugin/centralities/flowbetweenness/4";
+            
+            uriArray[0] = new URL(q1);
+            uriArray[1] = new URL(q2);
+            uriArray[2] = new URL(q3);
+            uriArray[3] = new URL(q4);
+            uriArray[4] = new URL(q5);
         }catch(Exception ex){
             System.out.println("***** URL Error: " + ex);
         }
         
         //Establish a connection to the server and get Content.
-        try {
-            HttpURLConnection http = (HttpURLConnection)centralityURL.openConnection();
-            http.setRequestMethod("GET");
-            http.connect();
-            StringBuffer text = new StringBuffer();
-            InputStreamReader in = new InputStreamReader((InputStream) http.getContent());
-            BufferedReader buff = new BufferedReader(in);
-            String line = "";
-            while (line != null) {
-                line = buff.readLine();
-                text.append(line + " ");
+        for(int i =0; i<uriArray.length; i++){
+            try {
+                HttpURLConnection http = (HttpURLConnection)uriArray[i].openConnection();
+                http.setRequestMethod("GET");
+                http.connect();
+                StringBuffer text = new StringBuffer();
+                InputStreamReader in = new InputStreamReader((InputStream) http.getContent());
+                BufferedReader buff = new BufferedReader(in);
+                String line = "";
+                while (line != null) {
+                    line = buff.readLine();
+                    text.append(line + " ");
+                }
+                JSONObject obj = new JSONObject(text.toString());
+                System.out.println("*********betweenness-json: " + obj.optDouble("flow-betweenness"));
+            } catch(Exception ex) {
+                System.out.println("MaxflowTest Exception: " + ex);
             }
-            JSONObject obj = new JSONObject(text.toString());
-            System.out.println("*********betweenness-json: " + obj.optDouble("flow-betweenness"));
-        } catch(Exception ex) {
-            System.out.println("MaxflowTest Exception: " + ex);
         }
         assertEquals("200","200");
     }
