@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.lang.Thread;
 
+import org.json.JSONObject;
+
 @Path("/flowbetweenness")
 public class FlowBetweenness {
     private final GraphDatabaseService database;
@@ -41,7 +43,8 @@ public class FlowBetweenness {
     public Response flowBetweenness(@PathParam("target") long target) {
         JSONObject obj = new org.json.JSONObject();
         try{
-            obj.put("flow-betweenness",this.getFlowBetweenness(target));
+            obj.put("flow-betweenness", this.getFlowBetweenness(target));
+            obj.put("target-node",      target);
         } catch (Exception ex) {
             System.err.println("MaximumFlowService: " + ex);
         }
@@ -53,44 +56,35 @@ public class FlowBetweenness {
      *
      */
     public double getFlowBetweenness(long targetNodeId){
+        double maxFlowSum   = 0.0;
+        double flowSum      = 0.0;
+        double betweenness  = 0.0;
         Transaction tx = database.beginTx();
         try{
-            Node  tnode    = database.getNodeById(targetNodeId);
-            final MaximumFlow maxflow  = new MaximumFlow(database);
-            List <Node> flowNode = new ArrayList<Node>();
-            final List <Double>   maxflows = new ArrayList<Double>();
-            List <Double> tflow    = new ArrayList<Double>();
-            
-            Iterable<Node> allGraphNodes = GlobalGraphOperations.at(database).getAllNodes();
-            for(Node n : allGraphNodes){
-                System.out.println("****The node is: " + n.getId());
-                if(database.getNodeById(targetNodeId).getId() != n.getId()) {
-                    flowNode.add(n);
-                }
-            }
-            for(final Node source: flowNode){
-                for(final Node sink: flowNode){
+            Node                    targetNode  = database.getNodeById(targetNodeId);
+            MaximumFlow             maxflowObj  = new MaximumFlow(database);
+            Iterable    <Node>      allNodes    = GlobalGraphOperations.at(database).getAllNodes();
+            List        <Double>    maxflows    = new ArrayList<Double>();
+            //Getting all the nodes...
+            for(Node source: allNodes){
+                for(Node sink: allNodes){
                     if((source.getId()!= sink.getId())
                        && (source.getId() != targetNodeId)
                        && (sink.getId() != targetNodeId)){
-                        Thread t = new Thread() {
-                            public void run() {
-                                Transaction tx = database.beginTx();
-                                try{
-                                    maxflows.add(maxflow.getMaxFlow(source.getId(),sink.getId())); //Running Thread smoothly...
-                                }catch (Exception e) {
-                                    System.err.println("Exception Error: FlowBetweenness Class: " + e);
-                                    tx.failure();
-                                } finally {
-                                    tx.success();
-                                    tx.close();
-                                }
-                            }
-                        };
-                        t.start();
+                        //Running Thread smoothly...
+                        maxFlowSum  =  maxflowObj.getMaxFlow(source.getId(),sink.getId(),targetNodeId) + maxFlowSum;
+                        flowSum     =  maxflowObj.getTargetNodeFlow() + flowSum;
+                        /*
+                         Thread t = new Thread() {
+                         public void run() {
+                         maxflows.add(maxflow.getMaxFlow(source.getId(),sink.getId(),0)); //Running Thread smoothly...
+                         }
+                         };
+                         t.start();*/
                     }
                 }
             }
+            betweenness = flowSum/maxFlowSum;
         }catch (Exception e) {
             System.err.println("Exception Error: FlowBetweenness Class: " + e);
             tx.failure();
@@ -98,7 +92,7 @@ public class FlowBetweenness {
             tx.success();
             tx.close();
         }
-        return 0;
+        return betweenness;
     }
     private double getFlowBetweenness(long targetNodeId, long nodeLocalNetwork){
         return 0;

@@ -26,14 +26,12 @@ import java.util.List;
 import org.json.JSONObject;
 import java.util.UUID;
 
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 
 @Path("/maximumflow")
 public class MaximumFlow {
-    
     private final GraphDatabaseService database;
     private Node nSource;
     private Node nSink;

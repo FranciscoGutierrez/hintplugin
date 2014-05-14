@@ -82,10 +82,11 @@ public class BetweennessTest {
             tx.success();
             tx.close();
         }
+        URL centralityURL = null;
         try{
             String serverBaseUri = server.baseUri().toString();
             String q1 = serverBaseUri + "hintplugin/centralities/flowbetweenness/1";// 0.25 - 0.35
-            URL centralityURL = new URL(q1);
+            centralityURL = new URL(q1);
         }catch(Exception ex){
             System.out.println("***** URL Error: " + ex);
         }
@@ -104,8 +105,7 @@ public class BetweennessTest {
                 text.append(line + " ");
             }
             JSONObject obj = new JSONObject(text.toString());
-            System.out.println("*********Flow-JSON: " + obj.optDouble("maxflow"));
-            System.out.println("***TargetFlow-JSON: " + obj.optDouble("target-flow"));
+            System.out.println("*********betweenness-json: " + obj.optDouble("flow-betweenness"));
         } catch(Exception ex) {
             System.out.println("MaxflowTest Exception: " + ex);
         }
