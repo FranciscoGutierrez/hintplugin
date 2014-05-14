@@ -36,14 +36,13 @@ public class BetweennessTest {
         CONTAINED_IN, KNOWS
     }
     
-    
     @Before
     public void before() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);
         server = CommunityServerBuilder
         .server()
         .onPort(serverSocket.getLocalPort())
-        .withThirdPartyJaxRsPackage("org.neo4j.hintplugin.utils", "/hintplugin/utils")
+        .withThirdPartyJaxRsPackage("org.neo4j.hintplugin.centralities", "/hintplugin/centralities")
         .build();
         server.start();
         db = server.getDatabase().getGraph();
@@ -58,23 +57,23 @@ public class BetweennessTest {
     public void shouldReturnBetweenness() {
         Transaction tx = db.beginTx();
         try{
-        Node a = db.createNode();
-        Node b = db.createNode();
-        Node c = db.createNode();
-        Node d = db.createNode();
-        Node e = db.createNode();
-        a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",1.0);
-        a.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight",3.0);
-        a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
-        b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",3.0);
-        c.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
-        c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
+            Node a = db.createNode();
+            Node b = db.createNode();
+            Node c = db.createNode();
+            Node d = db.createNode();
+            Node e = db.createNode();
+            a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",1.0);
+            a.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight",3.0);
+            a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
+            b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",3.0);
+            c.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
+            c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",2.0);
             
-        Iterable <Node> allNodeList = GlobalGraphOperations.at(db).getAllNodes();
+            Iterable <Node> allNodeList = GlobalGraphOperations.at(db).getAllNodes();
             
-        for (Node n : allNodeList) {
-            System.out.println("****The node is: " + n.getId());
-        }
+            for (Node n : allNodeList) {
+                System.out.println("****The node is: " + n.getId());
+            }
             
         } catch (Exception e) {
             System.err.println("Exception Error: MaxflowTest.shouldReturnMaxFlow: " + e);
@@ -83,53 +82,32 @@ public class BetweennessTest {
             tx.success();
             tx.close();
         }
-
-        String serverBaseUri = server.baseUri().toString();
-        URL uriArray[] = new URL[6];
-        String q1 = serverBaseUri + "hintplugin/utils/maximumflow/0/2"; // a-c 6
-        String q2 = serverBaseUri + "hintplugin/utils/maximumflow/0/3"; // a-d 4
-        String q3 = serverBaseUri + "hintplugin/utils/maximumflow/0/4"; // a-e 2
-        String q4 = serverBaseUri + "hintplugin/utils/maximumflow/2/3"; // c-d 4
-        String q5 = serverBaseUri + "hintplugin/utils/maximumflow/2/4"; // c-e 2
-        String q6 = serverBaseUri + "hintplugin/utils/maximumflow/3/4"; // d-e 2
-        
-        String qa = serverBaseUri + "hintplugin/utils/maximumflow/1/0"; // a-c 6
-        String qb = serverBaseUri + "hintplugin/utils/maximumflow/1/2"; // a-d 4
-        String qc = serverBaseUri + "hintplugin/utils/maximumflow/1/3"; // a-e 2
-        String qd = serverBaseUri + "hintplugin/utils/maximumflow/1/4"; // c-d 4
-        String qe = serverBaseUri + "hintplugin/utils/maximumflow/1/4"; // c-e 2
-        String qf = serverBaseUri + "hintplugin/utils/maximumflow/1/4"; // d-e 2
-        
         try{
-            uriArray[0] = new URL(q1);
-            uriArray[1] = new URL(q2);
-            uriArray[2] = new URL(q3);
-            uriArray[3] = new URL(q4);
-            uriArray[4] = new URL(q5);
-            uriArray[5] = new URL(q6);
+            String serverBaseUri = server.baseUri().toString();
+            String q1 = serverBaseUri + "hintplugin/centralities/flowbetweenness/1";// 0.25 - 0.35
+            URL centralityURL = new URL(q1);
         }catch(Exception ex){
-            System.out.println("***** ERROR: " + ex);
+            System.out.println("***** URL Error: " + ex);
         }
+        
         //Establish a connection to the server and get Content.
-        for(int i =0; i<uriArray.length; i++){
-            try {
-                HttpURLConnection http = (HttpURLConnection)uriArray[i].openConnection();
-                http.setRequestMethod("GET");
-                http.connect();
-                StringBuffer text = new StringBuffer();
-                InputStreamReader in = new InputStreamReader((InputStream) http.getContent());
-                BufferedReader buff = new BufferedReader(in);
-                String line = "";
-                while (line != null) {
-                    line = buff.readLine();
-                    text.append(line + " ");
-                }
-                JSONObject obj = new JSONObject(text.toString());
-//              System.out.println("******* JSON: " + text.toString());
-                System.out.println("***Flow-JSON: " + obj.optDouble("maxflow"));
-            } catch(Exception ex) {
-                System.out.println("MaxflowTest Exception: " + ex);
+        try {
+            HttpURLConnection http = (HttpURLConnection)centralityURL.openConnection();
+            http.setRequestMethod("GET");
+            http.connect();
+            StringBuffer text = new StringBuffer();
+            InputStreamReader in = new InputStreamReader((InputStream) http.getContent());
+            BufferedReader buff = new BufferedReader(in);
+            String line = "";
+            while (line != null) {
+                line = buff.readLine();
+                text.append(line + " ");
             }
+            JSONObject obj = new JSONObject(text.toString());
+            System.out.println("*********Flow-JSON: " + obj.optDouble("maxflow"));
+            System.out.println("***TargetFlow-JSON: " + obj.optDouble("target-flow"));
+        } catch(Exception ex) {
+            System.out.println("MaxflowTest Exception: " + ex);
         }
         assertEquals("200","200");
     }
