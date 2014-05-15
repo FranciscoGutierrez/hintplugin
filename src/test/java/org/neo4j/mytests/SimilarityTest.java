@@ -29,8 +29,7 @@ public class SimilarityTest {
     private GraphDatabaseAPI db;
     private CommunityNeoServer server;
     
-    enum MyRelationshipTypes implements RelationshipType
-    {
+    enum MyRelationshipTypes implements RelationshipType{
         CONTAINED_IN, KNOWS
     }
     
@@ -51,7 +50,6 @@ public class SimilarityTest {
     public void after() {
         server.stop();
     }
-    /*
     @Test
     public void shouldReturnAllTheNodes() {
         Transaction tx = db.beginTx();
@@ -93,7 +91,6 @@ public class SimilarityTest {
         }
         assertEquals("200",statusCode + "");
     }
-    */
     private Client jerseyClient() {
         DefaultClientConfig defaultClientConfig = new DefaultClientConfig();
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);

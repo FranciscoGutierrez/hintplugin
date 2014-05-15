@@ -28,61 +28,80 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
+import org.json.JSONObject;
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.IteratorUtil;
-
-@Path( "/similarity" )
+import java.lang.Math;
+@Path("/similarity")
 public class Similarity {
-
+    
     private final GraphDatabaseService database;
     private Node node_a;
     private Node node_b;
-
-    enum MyRelationshipTypes implements RelationshipType
-    {
+    private double threshold;
+    
+    enum MyRelationshipTypes implements RelationshipType {
         KNOWS, IS_SIMILAR
     }
-    
-    public Similarity( @Context GraphDatabaseService database ) {
+    /*
+     * The Public constructor.
+     */
+    public Similarity(@Context GraphDatabaseService database) {
         this.database = database;
     }
-    
+    /*
+     * The RESTful Method to be called to retrieve Similarity Between two nodes.
+     * @param node_a:
+     * @param node_b:
+     */
     @GET
-    @Produces( MediaType.TEXT_PLAIN )
-    @Path( "/{node_a}/{node_b}" )
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{node_a}/{node_b}")
     public Response similarity(@PathParam("node_a") long node_a, @PathParam("node_b") long node_b) {
-        // Do stuff with the database
-/*        return Response.status(Status.OK).entity(
-                ("json {" + this.getSimilarity(node_a, node_b)).getBytes(Charset.forName("UTF-8"))).build();
-*/
-        String json = "{\"similarity\":" + this.getSimilarity(node_a, node_b) + "}";
-        return Response.ok(json, MediaType.APPLICATION_JSON).build();
+        JSONObject obj = new org.json.JSONObject();
+        try{
+            obj.put("similarity",  this.getSimilarity(node_a, node_b));
+            obj.put("node-a",      node_a);
+            obj.put("node-b",      node_b);
+            obj.put("threshold",   0.5);
+        } catch (Exception ex) {
+            System.err.println("utils.Similarity Class: " + ex);
+        }
+        return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
     }
-    
+    /*
+     * Calculates Similarity Between Two Nodes, Based on Jaccard Index.
+     * @param node_a:       the start node to calculate similarity.
+     * @param node_b:       the end node to calculate similarity.
+     * @param threshold:    the threshold that must be equal or up to create a relationship.
+     */
     private double getSimilarity(long node_a, long node_b){
-        double similarity = 0.0f;
+        double node_a_degree        = 0.0;
+        double node_b_degree        = 0.0;
+        double similarity           = 0.0;
+        double node_intersection    = 0.0;
+        double node_union           = 0.0;
         Transaction tx = database.beginTx();
         try {
             this.node_a = database.getNodeById(node_a);
             this.node_b = database.getNodeById(node_b);
-            
             Iterable<Relationship> relationships_a = this.node_a.getRelationships();
             Iterable<Relationship> relationships_b = this.node_b.getRelationships();
-            
-            int node_a_degree = IteratorUtil.count(relationships_a);
-            int node_b_degree = IteratorUtil.count(relationships_b);
-            
-            double node_union = node_a_degree + node_b_degree;
-            double node_intersection = 0.0f;
-            
-            for (Relationship a: this.node_a.getRelationships()){ //The starting node is a*
-                for (Relationship b: this.node_b.getRelationships()){ //The starting node is b*
+            node_a_degree = IteratorUtil.count(relationships_a);
+            node_b_degree = IteratorUtil.count(relationships_b);
+            node_union = node_a_degree + node_b_degree;
+            for (Relationship a: this.node_a.getRelationships()) {
+                for (Relationship b: this.node_b.getRelationships()) {
                     if(a.getEndNode().getId() == b.getEndNode().getId())
                         node_intersection++;
                 }
             }
-            similarity = (node_intersection)/(node_union - node_intersection);
+            if ( (node_intersection == 0) && (node_union <=0)) {
+                similarity = 1.0;
+            } else {
+                similarity = Math.abs(node_intersection)/Math.abs(node_union);
+            }
+            
             if(similarity >= 0.5){
                 this.node_a.createRelationshipTo(this.node_b, MyRelationshipTypes.IS_SIMILAR);
                 System.out.println("*************   Warning: Relationship Created ");
@@ -94,7 +113,7 @@ public class Similarity {
         } catch (Exception e) {
             System.out.println("Fail, This happened: " + e);
         } finally {
-             tx.close();
+            tx.close();
         }
         return similarity;
     }

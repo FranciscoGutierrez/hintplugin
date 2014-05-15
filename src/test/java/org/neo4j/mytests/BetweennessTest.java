@@ -1,4 +1,4 @@
-package org.neo4j.mytests;
+/*package org.neo4j.mytests;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -122,4 +122,4 @@ public class BetweennessTest {
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);
         return Client.create(defaultClientConfig);
     }
-}
+}*/
