@@ -18,8 +18,6 @@
  */
 package org.neo4j.hintplugin.utils;
 
-import java.nio.charset.Charset;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -27,11 +25,20 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import org.json.JSONObject;
-import org.neo4j.graphdb.*;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Node;
 import org.neo4j.helpers.collection.IteratorUtil;
+
 import java.lang.Math;
+
 @Path("/similarity")
 public class Similarity {
     
@@ -39,6 +46,7 @@ public class Similarity {
     private Node node_a;
     private Node node_b;
     private double threshold;
+    private final double threshold = 0.5;
     
     enum MyRelationshipTypes implements RelationshipType {
         KNOWS, IS_SIMILAR
@@ -58,16 +66,17 @@ public class Similarity {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{node_a}/{node_b}")
     public Response similarity(@PathParam("node_a") long node_a, @PathParam("node_b") long node_b) {
-        JSONObject obj = new org.json.JSONObject();
+        Gson       gson = new GsonBuilder().create();
+        JsonObject obj  = new JsonObject();
         try{
-            obj.put("similarity",  this.getSimilarity(node_a, node_b));
-            obj.put("node-a",      node_a);
-            obj.put("node-b",      node_b);
-            obj.put("threshold",   0.5);
+            obj.addProperty("similarity",  this.getSimilarity(node_a, node_b));
+            obj.addProperty("node-start",      node_a);
+            obj.addProperty("node-end",      node_b);
+            obj.addProperty("threshold",   this.threshold);
         } catch (Exception ex) {
             System.err.println("utils.Similarity Class: " + ex);
         }
-        return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
+        return Response.ok(gson.toJson(obj), MediaType.APPLICATION_JSON).build();
     }
     /*
      * Calculates Similarity Between Two Nodes, Based on Jaccard Index.
@@ -90,6 +99,7 @@ public class Similarity {
             node_a_degree = IteratorUtil.count(relationships_a);
             node_b_degree = IteratorUtil.count(relationships_b);
             node_union = node_a_degree + node_b_degree;
+            // PENDING*** ignore is_similar relationship
             for (Relationship a: this.node_a.getRelationships()) {
                 for (Relationship b: this.node_b.getRelationships()) {
                     if(a.getEndNode().getId() == b.getEndNode().getId())
@@ -101,14 +111,14 @@ public class Similarity {
             } else {
                 similarity = Math.abs(node_intersection)/Math.abs(node_union);
             }
-            
+            //Destroy any "similarity" relationships... (if any)
             if(similarity >= 0.5){
-                this.node_a.createRelationshipTo(this.node_b, MyRelationshipTypes.IS_SIMILAR);
-                System.out.println("*************   Warning: Relationship Created ");
+                for (Relationship r: this.node_a.getRelationships(MyRelationshipTypes.IS_SIMILAR)){
+                    r.delete();
+                }
+                Relationship rs = this.node_a.createRelationshipTo(this.node_b, MyRelationshipTypes.IS_SIMILAR);
+                rs.setProperty("similarity", similarity);
             }
-            System.out.println("*************        Union: " + node_union);
-            System.out.println("************* Intersection: " + node_intersection);
-            System.out.println("*************   Similarity: " + similarity);
             tx.success();
         } catch (Exception e) {
             System.out.println("Fail, This happened: " + e);
