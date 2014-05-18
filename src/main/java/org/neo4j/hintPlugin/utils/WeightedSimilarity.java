@@ -39,8 +39,8 @@ import org.neo4j.helpers.collection.IteratorUtil;
 
 import java.lang.Math;
 
-@Path("/similarity")
-public class Similarity {
+@Path("/weightedsimilarity")
+public class WeightedSimilarity {
     
     private final GraphDatabaseService database;
     private Node node_a;
@@ -53,7 +53,7 @@ public class Similarity {
     /*
      * The Public constructor.
      */
-    public Similarity(@Context GraphDatabaseService database) {
+    public WeightedSimilarity(@Context GraphDatabaseService database) {
         this.database = database;
     }
     /*
@@ -64,11 +64,12 @@ public class Similarity {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{node_a}/{node_b}")
-    public Response similarity(@PathParam("node_a") long node_a, @PathParam("node_b") long node_b) {
+    public Response weightedSimilarity(@PathParam("node_a") long node_a,
+                                       @PathParam("node_b") long node_b) {
         Gson       gson = new GsonBuilder().create();
         JsonObject obj  = new JsonObject();
         try{
-            obj.addProperty("similarity",  this.getSimilarity(node_a, node_b));
+            obj.addProperty("weighted-similarity",  this.getWeightedSimilarity(node_a, node_b));
             obj.addProperty("node-start",      node_a);
             obj.addProperty("node-end",      node_b);
             obj.addProperty("threshold",   this.threshold);
@@ -83,30 +84,44 @@ public class Similarity {
      * @param node_b:       the end node to calculate similarity.
      * @param threshold:    the threshold that must be equal or up to create a relationship.
      */
-    private double getSimilarity(long node_a, long node_b){
-        double node_a_degree        = 0.0;
-        double node_b_degree        = 0.0;
+    private double getWeightedSimilarity(long node_a, long node_b){
         double similarity           = 0.0;
         double node_intersection    = 0.0;
         double node_union           = 0.0;
+        double count_node_a         = 0.0;
+        double count_node_b         = 0.0;
+        double count_intersection   = 0.0;
         Transaction tx = database.beginTx();
         try {
             this.node_a = database.getNodeById(node_a);
             this.node_b = database.getNodeById(node_b);
-            Iterable<Relationship> relationships_a = this.node_a.getRelationships();
-            Iterable<Relationship> relationships_b = this.node_b.getRelationships();
-            node_a_degree = IteratorUtil.count(relationships_a);
-            node_b_degree = IteratorUtil.count(relationships_b);
-            node_union = node_a_degree + node_b_degree;
+            //Union;
+            for (Relationship a: this.node_a.getRelationships()) {
+                node_union = new Double(a.getProperty("weight").toString()) + node_union;
+                count_node_a++;
+            }
+            for (Relationship b: this.node_b.getRelationships()) {
+                node_union = new Double(b.getProperty("weight").toString()) + node_union;
+                count_node_b++;
+            }
+            //Intersection;
             for (Relationship a: this.node_a.getRelationships()) {
                 for (Relationship b: this.node_b.getRelationships()) {
-                    if(a.getEndNode().getId() == b.getEndNode().getId())
-                        node_intersection++;
+                    if(a.hasProperty("weight") && b.hasProperty("weight")){
+                        if(a.getEndNode().getId() == b.getEndNode().getId()){
+                            node_intersection = new Double(a.getProperty("weight").toString()) +
+                            new Double(b.getProperty("weight").toString()) + node_intersection;
+                            count_intersection++;
+                        }
+                    }
                 }
             }
-            System.out.println("****** Union:" + node_union);
+            //Jaccard Index...
+            node_intersection = node_intersection/count_intersection;
+            node_union = node_union/(count_node_a + count_node_b);
             System.out.println("****** Inter:" + node_intersection);
-            if (node_union != 0) {
+            System.out.println("****** Union:" + node_union);
+            if (Math.abs(node_union) >= 0) {
                 similarity = Math.abs(node_intersection)/Math.abs(node_union);
             } else {
                 similarity = 1.0;

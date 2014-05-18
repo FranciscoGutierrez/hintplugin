@@ -1,4 +1,4 @@
-/*package org.neo4j.mytests;
+package org.neo4j.mytests;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -25,7 +25,7 @@ import static junit.framework.Assert.assertEquals;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class SimilarityTest {
+public class WeightedSimilarityTest {
     private GraphDatabaseAPI db;
     private CommunityNeoServer server;
     
@@ -58,20 +58,11 @@ public class SimilarityTest {
         Node c = db.createNode();
         Node d = db.createNode();
         Node e = db.createNode();
-        Node f = db.createNode();
-        a.setProperty("name", "Mark");
-        b.setProperty("name", "Travis");
-        c.setProperty("name", "Tom");
-        d.setProperty("name", "Scott");
-        e.setProperty("name", "Kevin");
-        f.setProperty("name", "Matt");
-        
-        a.createRelationshipTo(c, MyRelationshipTypes.KNOWS);
-        a.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
-        a.createRelationshipTo(e, MyRelationshipTypes.KNOWS);
-        b.createRelationshipTo(e, MyRelationshipTypes.KNOWS);
-        b.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
-        b.createRelationshipTo(f, MyRelationshipTypes.KNOWS);
+        a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",1);
+        a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",1);
+        b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",1);
+        b.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",1);
+        a.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",1);
         
         tx.success();
         tx.close();
@@ -79,15 +70,15 @@ public class SimilarityTest {
         String node_a = "0";
         String node_b = "1";
         String address = server.baseUri().toString()+
-                        "hintplugin/utils/similarity/"+
-                        node_a + "/" + node_b;
+        "hintplugin/utils/weightedsimilarity/"+
+        node_a + "/" + node_b;
         try{
             URL url = new URL(address);
             HttpURLConnection http = (HttpURLConnection)url.openConnection();
             statusCode = http.getResponseCode();
             System.out.println("Connection RESPONSE CODE: " + statusCode);
         }
-            catch(IOException ex){
+        catch(IOException ex){
         }
         assertEquals("200",statusCode + "");
     }
@@ -96,4 +87,4 @@ public class SimilarityTest {
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);
         return Client.create(defaultClientConfig);
     }
-}*/
+}
