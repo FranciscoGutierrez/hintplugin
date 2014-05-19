@@ -43,13 +43,7 @@ import java.lang.Math;
 public class WWord {
     
     private final GraphDatabaseService database;
-    private Node node_a;
-    private Node node_b;
-    private final double threshold = 0.5;
-    
-    enum MyRelationshipTypes implements RelationshipType {
-        KNOWS, IS_SIMILAR
-    }
+    private Node node;
     /*
      * The Public constructor.
      */
@@ -64,17 +58,14 @@ public class WWord {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{node}")
-    public Response wword(@PathParam("node_a") long node_a,
-                          @PathParam("node_b") long node_b) {
+    public Response wword(@PathParam("node") long node) {
         Gson       gson = new GsonBuilder().create();
         JsonObject obj  = new JsonObject();
         try{
-            obj.addProperty("weighted-similarity",  this.getWWord(node_a, node_b));
-            obj.addProperty("node-start",      node_a);
-            obj.addProperty("node-end",      node_b);
-            obj.addProperty("threshold",   this.threshold);
+            obj.addProperty("wword",  this.getWWord(node));
+            obj.addProperty("nodeId", node);
         } catch (Exception ex) {
-            System.err.println("utils.Similarity Class: " + ex);
+            System.err.println("utils.WWord Class: " + ex);
         }
         return Response.ok(gson.toJson(obj), MediaType.APPLICATION_JSON).build();
     }
@@ -84,8 +75,11 @@ public class WWord {
      * @param node_b:       the end node to calculate similarity.
      * @param threshold:    the threshold that must be equal or up to create a relationship.
      */
-    private double getWWord(long node_a, long node_b){
-        double similarity           = 0.0;
-        return similarity;
+    private double getWWord(long node){
+        double wword = 0.0;
+        double similarityAvg = 0.0;
+        double predominance = 0.0;
+        wword = similarityAvg * predominance;
+        return wword;
     }
 }

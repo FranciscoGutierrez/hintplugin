@@ -43,13 +43,9 @@ import java.lang.Math;
 public class Predbag {
     
     private final GraphDatabaseService database;
-    private Node node_a;
-    private Node node_b;
-    private final double threshold = 0.5;
+    private Node node;
+    private double numberOfWords;
     
-    enum MyRelationshipTypes implements RelationshipType {
-        KNOWS, IS_SIMILAR
-    }
     /*
      * The Public constructor.
      */
@@ -57,35 +53,48 @@ public class Predbag {
         this.database = database;
     }
     /*
-     * The RESTful Method to be called to retrieve Similarity Between two nodes.
-     * @param node_a:
-     * @param node_b:
+     * The RESTful Method to get the average predominance
+     * of the n words in the bag of words of a POI.
+     * @param node: the target node.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{node_a}/{node_b}")
-    public Response predbag(@PathParam("node_a") long node_a,
-                            @PathParam("node_b") long node_b) {
+    @Path("/{node}")
+    public Response predbag(@PathParam("node") long node) {
         Gson       gson = new GsonBuilder().create();
         JsonObject obj  = new JsonObject();
         try{
-            obj.addProperty("weighted-similarity",  this.getPredbag(node_a, node_b));
-            obj.addProperty("node-start",      node_a);
-            obj.addProperty("node-end",      node_b);
-            obj.addProperty("threshold",   this.threshold);
+            obj.addProperty("predbag",          this.getPredbag(node));
+            obj.addProperty("nodeId",           node);
+            obj.addProperty("numberOfWords",    this.numberOfWords);
         } catch (Exception ex) {
-            System.err.println("utils.Similarity Class: " + ex);
+            System.err.println("utils.Predbag Class: " + ex);
         }
         return Response.ok(gson.toJson(obj), MediaType.APPLICATION_JSON).build();
     }
     /*
-     * Calculates Similarity Between Two Nodes, Based on Jaccard Index.
-     * @param node_a:       the start node to calculate similarity.
-     * @param node_b:       the end node to calculate similarity.
-     * @param threshold:    the threshold that must be equal or up to create a relationship.
+     * Calculates PredBag The average predominance of the n
+     * words in the bag of words of a POI.
+     * @param node:       The target node.
      */
-    private double getPredbag(long node_a, long node_b){
-        double similarity           = 0.0;
-        return similarity;
+    private double getPredbag(long node){
+        double predbag = 0.0;
+        double degree  = 0.0;
+        Transaction tx = database.beginTx();
+        try {
+            this.node = database.getNodeById(node);
+            for (Relationship r: this.node.getRelationships()){
+                predbag = new Double(r.getProperty("weight").toString()) + predbag;
+                degree++;
+            }
+            predbag = predbag/degree;
+            this.numberOfWords = degree;
+            tx.success();
+        } catch (Exception e) {
+            System.out.println("Fail, This happened: " + e);
+        } finally {
+            tx.close();
+        }
+        return predbag;
     }
 }

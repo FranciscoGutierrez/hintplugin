@@ -24,6 +24,10 @@ import static junit.framework.Assert.assertEquals;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.json.JSONObject;
 
 public class WeightedSimilarityTest {
     private GraphDatabaseAPI db;
@@ -70,13 +74,32 @@ public class WeightedSimilarityTest {
         String node_a = "0";
         String node_b = "1";
         String address = server.baseUri().toString()+
-        "hintplugin/utils/weightedsimilarity/"+
+        "hintplugin/utils/wsimilarity/"+
         node_a + "/" + node_b;
         try{
             URL url = new URL(address);
             HttpURLConnection http = (HttpURLConnection)url.openConnection();
+            http.setRequestMethod("GET");
+            http.connect();
             statusCode = http.getResponseCode();
-            System.out.println("Connection RESPONSE CODE: " + statusCode);
+            
+            StringBuffer text = new StringBuffer();
+            InputStreamReader in = new InputStreamReader((InputStream) http.getContent());
+            BufferedReader buff = new BufferedReader(in);
+            String line = "";
+            while (line != null) {
+                line = buff.readLine();
+                text.append(line + " ");
+            }
+            JSONObject obj = new JSONObject(text.toString());
+            System.out.println("*********JaccardWSimilarity-json: " +
+                               obj.optDouble("jaccardWSimilarity"));
+            
+            System.out.println("*********EuclideanWSimilarity-json: " +
+                               obj.optDouble("euclideanWSimilarity"));
+
+            
+            
         }
         catch(IOException ex){
         }

@@ -43,13 +43,8 @@ import java.lang.Math;
 public class Predgraph {
     
     private final GraphDatabaseService database;
-    private Node node_a;
-    private Node node_b;
-    private final double threshold = 0.5;
-    
-    enum MyRelationshipTypes implements RelationshipType {
-        KNOWS, IS_SIMILAR
-    }
+    private Node node;
+    private double numberOfWords;
     /*
      * The Public constructor.
      */
@@ -58,23 +53,20 @@ public class Predgraph {
     }
     /*
      * The RESTful Method to be called to retrieve Similarity Between two nodes.
-     * @param node_a:
-     * @param node_b:
+     * @param node: the target node.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{node}")
-    public Response predgraph(@PathParam("node_a") long node_a,
-                              @PathParam("node_b") long node_b) {
+    public Response predgraph(@PathParam("node") long node) {
         Gson       gson = new GsonBuilder().create();
         JsonObject obj  = new JsonObject();
         try{
-            obj.addProperty("weighted-similarity",  this.getPredgraph(node_a, node_b));
-            obj.addProperty("node-start",      node_a);
-            obj.addProperty("node-end",      node_b);
-            obj.addProperty("threshold",   this.threshold);
+            obj.addProperty("predgraph",    this.getPredgraph(node));
+            obj.addProperty("nodeId",       node);
+            obj.addProperty("numberOfWords",this.numberOfWords);
         } catch (Exception ex) {
-            System.err.println("utils.Similarity Class: " + ex);
+            System.err.println("utils.PredGraph Class: " + ex);
         }
         return Response.ok(gson.toJson(obj), MediaType.APPLICATION_JSON).build();
     }
@@ -84,8 +76,23 @@ public class Predgraph {
      * @param node_b:       the end node to calculate similarity.
      * @param threshold:    the threshold that must be equal or up to create a relationship.
      */
-    private double getPredgraph(long node_a, long node_b){
-        double similarity = 0.0;
-        return similarity;
+    private double getPredgraph(long node){
+        double predgraph    = 0.0;
+        double degree       = 0.0;
+        Transaction tx = database.beginTx();
+        try {
+            this.node = database.getNodeById(node);
+            for (Relationship r: this.node.getRelationships()){
+                predgraph = new Double(r.getProperty("weight").toString()) + predgraph;
+                degree++;
+            }
+            this.numberOfWords = degree;
+            tx.success();
+        } catch (Exception e) {
+            System.out.println("Fail, This happened: " + e);
+        } finally {
+            tx.close();
+        }
+        return predgraph;
     }
 }
