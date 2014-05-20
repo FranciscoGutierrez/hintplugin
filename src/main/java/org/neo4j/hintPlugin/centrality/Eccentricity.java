@@ -33,10 +33,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.tooling.GlobalGraphOperations;
-import org.neo4j.hintplugin.utils.MaximumFlow;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.tooling.GlobalGraphOperations;
+import org.neo4j.graphalgo.GraphAlgoFactory;
+import static org.neo4j.graphalgo.GraphAlgoFactory.shortestPath;
+import static org.neo4j.kernel.Traversal.expanderForAllTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Runnable;
@@ -44,7 +47,7 @@ import org.json.JSONObject; // Must be changed to Gson
 
 /**
  * Eccentricity Class: This can be used to calculate eccentricity of nodes.
- * Eccentricity is defined as the maximum distance to any other node.
+ * Eccentricity is defined as the maximum distance to any other node in the graph.
  * @author  Francisco Gutiérrez. (fsalvador23@gmail.com)
  * @version 0.1
  * @since 2014-05-01
@@ -52,6 +55,7 @@ import org.json.JSONObject; // Must be changed to Gson
 @Path("/eccentricity")
 public class Eccentricity {
     private final GraphDatabaseService database;
+    public int maxDepth = 10000;
     public Eccentricity( @Context GraphDatabaseService database ) {
         this.database = database;
     }
@@ -69,7 +73,7 @@ public class Eccentricity {
             obj.put("eccentricity",this.getEccentricity(targetNodeId));
             obj.put("target-node", targetNodeId);
         } catch (Exception ex) {
-            System.err.println("centralities.FlowCloseness Class: " + ex);
+            System.err.println("centrality.Eccentricity Class: " + ex);
         }
         return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
     }
@@ -78,10 +82,19 @@ public class Eccentricity {
      * @param targetNodeId: The target node to get the centrality.
      */
     public double getEccentricity(long targetNodeId){
-        double eccentricity  = 0.0;
+        int maxValue = 0;
         Transaction tx = database.beginTx();
         try {
             Node targetNode  = database.getNodeById(targetNodeId);
+            for (Node n : GlobalGraphOperations.at(database).getAllNodes()){
+                if(n.getId() != targetNodeId){
+                    for (org.neo4j.graphdb.Path p : shortestPath(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(targetNode,n)){
+                        if (p.length() > maxValue) {
+                            maxValue = p.length();
+                        }
+                    }
+                }
+            }
         }catch (Exception e) {
             System.err.println("Exception Error: FlowBetweenness Class: " + e);
             tx.failure();
@@ -89,6 +102,6 @@ public class Eccentricity {
             tx.success();
             tx.close();
         }
-        return eccentricity;
+        return 1/maxValue;
     }
 }
