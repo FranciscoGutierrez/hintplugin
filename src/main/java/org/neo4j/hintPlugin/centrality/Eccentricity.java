@@ -31,19 +31,21 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.graphalgo.GraphAlgoFactory;
+import org.neo4j.tooling.GlobalGraphOperations;
 import static org.neo4j.graphalgo.GraphAlgoFactory.shortestPath;
 import static org.neo4j.kernel.Traversal.expanderForAllTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Runnable;
-import org.json.JSONObject; // Must be changed to Gson
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 /**
  * Eccentricity Class: This can be used to calculate eccentricity of nodes.
@@ -60,22 +62,23 @@ public class Eccentricity {
         this.database = database;
     }
     /*
-     * Flow Betweeness: RESTful Service...
-     * Calculates Flow Betweness in the Current Database.
+     * Eccentricity: RESTful Service...
+     * Eccentricity is defined as the maximum distance to any other node in the graph.
      * @param target: the id of the target to get the centrality value.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{targetNodeId}")
     public Response eccentricity(@PathParam("targetNodeId") long targetNodeId) {
-        JSONObject obj = new org.json.JSONObject();
+        Gson       gson = new GsonBuilder().create();
+        JsonObject obj  = new JsonObject();
         try{
-            obj.put("eccentricity",this.getEccentricity(targetNodeId));
-            obj.put("target-node", targetNodeId);
+            obj.addProperty("eccentricity",this.getEccentricity(targetNodeId));
+            obj.addProperty("targetNode", targetNodeId);
         } catch (Exception ex) {
             System.err.println("centrality.Eccentricity Class: " + ex);
         }
-        return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
+        return Response.ok(gson.toJson(obj), MediaType.APPLICATION_JSON).build();
     }
     /*
      * Calculates the Eccentricity given a target.
