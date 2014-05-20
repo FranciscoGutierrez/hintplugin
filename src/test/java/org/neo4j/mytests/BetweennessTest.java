@@ -42,7 +42,7 @@ public class BetweennessTest {
         server = CommunityServerBuilder
         .server()
         .onPort(serverSocket.getLocalPort())
-        .withThirdPartyJaxRsPackage("org.neo4j.hintplugin.centralities", "/hintplugin/centralities")
+        .withThirdPartyJaxRsPackage("org.neo4j.hintplugin.centrality", "/hintplugin/centrality")
         .build();
         server.start();
         db = server.getDatabase().getGraph();

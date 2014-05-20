@@ -1,19 +1,14 @@
-/*
 package org.neo4j.mytests;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.mortbay.jetty.LocalConnector;
-
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -21,20 +16,17 @@ import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.server.CommunityNeoServer;
 import org.neo4j.server.helpers.CommunityServerBuilder;
 import org.neo4j.graphdb.RelationshipType;
-
 import java.io.IOException;
 import java.net.ServerSocket;
-
-import static junit.framework.Assert.assertEquals;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.json.JSONObject;
+import static junit.framework.Assert.assertEquals;
 
-public class WeightedSimilarityTest {
+public class EccentricityTest {
     private GraphDatabaseAPI db;
     private CommunityNeoServer server;
     
@@ -48,7 +40,7 @@ public class WeightedSimilarityTest {
         server = CommunityServerBuilder
         .server()
         .onPort(serverSocket.getLocalPort())
-        .withThirdPartyJaxRsPackage("org.neo4j.hintplugin.utils", "/hintplugin/utils")
+        .withThirdPartyJaxRsPackage("org.neo4j.hintplugin.centrality", "/hintplugin/centrality")
         .build();
         server.start();
         db = server.getDatabase().getGraph();
@@ -75,11 +67,9 @@ public class WeightedSimilarityTest {
         tx.success();
         tx.close();
         int statusCode = 0;
-        String node_a = "0";
-        String node_b = "1";
+        String node_a = "4";
         String address = server.baseUri().toString()+
-        "hintplugin/utils/wsimilarity/"+
-        node_a + "/" + node_b;
+        "hintplugin/centrality/eccentricity/"+ node_a;
         try{
             URL url = new URL(address);
             HttpURLConnection http = (HttpURLConnection)url.openConnection();
@@ -96,12 +86,9 @@ public class WeightedSimilarityTest {
                 text.append(line + " ");
             }
             JSONObject obj = new JSONObject(text.toString());
-            System.out.println("*********JaccardWSimilarity-json: " +
-                               obj.optDouble("jaccardWSimilarity"));
+            System.out.println("*********EccentricityJSON: " +
+                               obj.optDouble("eccentricity"));
             
-            System.out.println("*********EuclideanWSimilarity-json: " +
-                               obj.optDouble("euclideanWSimilarity"));
-   
         }
         catch(IOException ex){
         }
@@ -112,4 +99,4 @@ public class WeightedSimilarityTest {
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);
         return Client.create(defaultClientConfig);
     }
-}*/
+}

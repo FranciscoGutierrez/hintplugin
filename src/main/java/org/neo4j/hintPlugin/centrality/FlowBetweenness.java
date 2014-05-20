@@ -32,16 +32,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.hintplugin.utils.MaximumFlow;
-import org.neo4j.graphdb.Transaction;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Runnable;
-
 import org.json.JSONObject;
 
 /**
@@ -66,8 +64,8 @@ public class FlowBetweenness {
     public Response flowBetweenness(@PathParam("target") long target) {
         JSONObject obj = new org.json.JSONObject();
         try{
-            obj.put("flow-betweenness", this.getFlowBetweenness(target));
-            obj.put("target-node",      target);
+            obj.put("flowBetweenness", this.getFlowBetweenness(target));
+            obj.put("targetNode",      target);
         } catch (Exception ex) {
             System.err.println("centralities.FlowBetweenness Class: " + ex);
         }
@@ -83,19 +81,19 @@ public class FlowBetweenness {
         double betweenness  = 0.0;
         Transaction tx = database.beginTx();
         try {
-            Node                    targetNode  = database.getNodeById(targetNodeId);
-            MaximumFlow             maxflowObj  = new MaximumFlow(database);
-            Iterable    <Node>      allNodes    = GlobalGraphOperations.at(database).getAllNodes();
-            List        <Double>    maxflows    = new ArrayList<Double>();
+            Node targetNode = database.getNodeById(targetNodeId);
+            MaximumFlow maxflowObj = new MaximumFlow(database);
+            Iterable <Node> allNodes = GlobalGraphOperations.at(database).getAllNodes();
+            List <Double> maxflows = new ArrayList<Double>();
             //Getting all the nodes...
             for(Node source: allNodes){
                 for(Node sink: allNodes){
                     if((source.getId()!= sink.getId())
                        && (source.getId() != targetNodeId)
                        && (sink.getId() != targetNodeId)){
-                        //Running Thread smoothly...
-                        maxFlowSum  =  maxflowObj.getMaxFlow(source.getId(),sink.getId(),targetNodeId) + maxFlowSum;
-                        flowSum     =  maxflowObj.getTargetNodeFlow() + flowSum;
+                        //Running Thread smoothly... ???
+                        maxFlowSum = maxflowObj.getMaxFlow(source.getId(),sink.getId(),targetNodeId) + maxFlowSum;
+                        flowSum    = maxflowObj.getTargetNodeFlow() + flowSum;
                     }
                 }
             }

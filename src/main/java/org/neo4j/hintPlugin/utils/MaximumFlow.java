@@ -131,7 +131,7 @@ public class MaximumFlow {
                 }
                 /*
                  * Calculate the min, because:
-                 * flow = Collections.min(flows); 
+                 * flow = Collections.min(flows);
                  * Doesn't work with double primitives...
                  */
                 for (double ds : flows) {
@@ -159,10 +159,10 @@ public class MaximumFlow {
             }
             tx.success();
         } catch (Exception e) {
-            System.err.println("org.neo4j.hintplugin.utils.MaximumFlow.getFlow: " + e);
+            System.err.println("hintplugin.utils.MaximumFlow.getFlow: " + e);
             tx.failure();
         } finally {
-             tx.close();
+            tx.close();
         }
         return accumulator;
     }

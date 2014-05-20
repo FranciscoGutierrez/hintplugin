@@ -46,10 +46,10 @@ import java.lang.Runnable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-
+import java.lang.Math;
 /**
  * Eccentricity Class: This can be used to calculate eccentricity of nodes.
- * Eccentricity is defined as the maximum distance to any other node in the graph.
+ * Is defined as the maximum distance to any other node in the graph.
  * @author  Francisco Gutiérrez. (fsalvador23@gmail.com)
  * @version 0.1
  * @since 2014-05-01
@@ -63,7 +63,6 @@ public class Eccentricity {
     }
     /*
      * Eccentricity: RESTful Service...
-     * Eccentricity is defined as the maximum distance to any other node in the graph.
      * @param target: the id of the target to get the centrality value.
      */
     @GET
@@ -78,7 +77,7 @@ public class Eccentricity {
         } catch (Exception ex) {
             System.err.println("centrality.Eccentricity Class: " + ex);
         }
-        return Response.ok(gson.toJson(obj), MediaType.APPLICATION_JSON).build();
+        return Response.ok(gson.toJson(obj),MediaType.APPLICATION_JSON).build();
     }
     /*
      * Calculates the Eccentricity given a target.
@@ -105,6 +104,6 @@ public class Eccentricity {
             tx.success();
             tx.close();
         }
-        return 1/maxValue;
+        return Math.round((1.0/Math.abs(maxValue))*100.0)/100.0;
     }
 }
