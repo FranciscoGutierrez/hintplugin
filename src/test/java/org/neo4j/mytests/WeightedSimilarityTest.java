@@ -3,12 +3,16 @@ package org.neo4j.mytests;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.mortbay.jetty.LocalConnector;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -36,7 +40,6 @@ public class WeightedSimilarityTest {
     enum MyRelationshipTypes implements RelationshipType{
         CONTAINED_IN, KNOWS
     }
-    
     
     @Before
     public void before() throws IOException {
@@ -97,9 +100,7 @@ public class WeightedSimilarityTest {
             
             System.out.println("*********EuclideanWSimilarity-json: " +
                                obj.optDouble("euclideanWSimilarity"));
-
-            
-            
+   
         }
         catch(IOException ex){
         }

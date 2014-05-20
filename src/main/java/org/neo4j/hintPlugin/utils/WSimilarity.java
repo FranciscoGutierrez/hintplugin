@@ -1,20 +1,25 @@
 /**
- * Licensed to Neo Technology under one or more contributor
- * license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright
- * ownership. Neo Technology licenses this file to you under
- * the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * The MIT License (MIT)
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2014 Francisco G.
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package org.neo4j.hintplugin.utils;
 
@@ -90,7 +95,7 @@ public class WSimilarity {
      * @param node_b:       the end node to calculate similarity.
      * @param threshold:    the threshold that must be equal or up to create a relationship.
      */
-    private double getJaccardSimilarity(long node_a, long node_b){
+    private double getJaccardSimilarity (long node_a, long node_b) {
         double similarity           = 0.0;
         double nodeUnion            = 0.0;
         double nodeIntersection     = 0.0;
@@ -140,6 +145,11 @@ public class WSimilarity {
         }
         return Math.round(similarity * 100.0)/100.0;
     }
+    /*
+     * Calculates Similarity between to nodes using Eucliean Distance...
+     * @param array1:
+     * @param array2:
+     */
     private double getEuclideanSimilarity(long nodeA, long nodeB){
         double similarity = 0.0;
         double[] array1 = null;
@@ -182,6 +192,11 @@ public class WSimilarity {
         }
         return Math.round(Math.abs(1 - this.euclideanDistance(array1,array2))*100.0)/100.0;
     }
+    /*
+     * Calculates the Euclidean Distance Between to set of nodes.
+     * @param array1:
+     * @param array2:
+     */
     private double euclideanDistance(double[] array1, double[] array2) {
         double sum = 0.0;
         for(int i=0; i<array1.length; i++) {
