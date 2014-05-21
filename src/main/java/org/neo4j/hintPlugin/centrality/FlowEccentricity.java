@@ -43,11 +43,11 @@ import static org.neo4j.graphalgo.GraphAlgoFactory.shortestPath;
 import static org.neo4j.kernel.Traversal.expanderForAllTypes;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.Math;
 import java.lang.Runnable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import java.lang.Math;
 /**
  * Eccentricity Class: This can be used to calculate eccentricity of nodes.
  * Is defined as the maximum distance to any other node in the graph.
@@ -59,8 +59,8 @@ import java.lang.Math;
 public class FlowEccentricity {
     private final GraphDatabaseService database;
     public int maxDepth = 10000;
-    private int maxValue = 0;
-    public Eccentricity( @Context GraphDatabaseService database ) {
+    private double maxValue = 0;
+    public FlowEccentricity( @Context GraphDatabaseService database ) {
         this.database = database;
     }
     /*
@@ -73,8 +73,9 @@ public class FlowEccentricity {
     public Response eccentricity(@PathParam("targetNodeId") long targetNodeId) {
         Gson       gson = new GsonBuilder().create();
         JsonObject obj  = new JsonObject();
+        double flowEccentricity = this.getFlowEccentricity(targetNodeId);
         try{
-            obj.addProperty("eccentricity",this.getFlowEccentricity(targetNodeId));
+            obj.addProperty("flowEccentricity", flowEccentricity);
             obj.addProperty("targetNode", targetNodeId);
             obj.addProperty("pathMaxLength", maxValue);
         } catch (Exception ex) {
@@ -88,16 +89,14 @@ public class FlowEccentricity {
      */
     public double getFlowEccentricity(long targetNodeId){
         this.maxValue = 0;
-        MaximumFlow mf = MaximumFlow(database);
+        MaximumFlow mf = new MaximumFlow(database);
         Transaction tx = database.beginTx();
         try {
             Node targetNode  = database.getNodeById(targetNodeId);
             /* Get all other nodes in Graph (ignoring targetNodeId) */
             for (Node n : GlobalGraphOperations.at(database).getAllNodes()){
                 if(n.getId() != targetNodeId){
-                            maxValue = mf.getMaxFlow(targetNode.getId(),n.getId());
-
-                    }
+                    maxValue = mf.getMaxFlow(targetNode.getId(),n.getId());
                 }
             }
         }catch (Exception e) {
