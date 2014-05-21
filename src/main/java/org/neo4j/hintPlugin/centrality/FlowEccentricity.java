@@ -38,6 +38,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.tooling.GlobalGraphOperations;
+import org.neo4j.hintplugin.utils.MaximumFlow;
 import static org.neo4j.graphalgo.GraphAlgoFactory.shortestPath;
 import static org.neo4j.kernel.Traversal.expanderForAllTypes;
 import java.util.ArrayList;
@@ -54,8 +55,8 @@ import java.lang.Math;
  * @version 0.1
  * @since 2014-05-01
  */
-@Path("/eccentricity")
-public class Eccentricity {
+@Path("/floweccentricity")
+public class FlowEccentricity {
     private final GraphDatabaseService database;
     public int maxDepth = 10000;
     private int maxValue = 0;
@@ -73,7 +74,7 @@ public class Eccentricity {
         Gson       gson = new GsonBuilder().create();
         JsonObject obj  = new JsonObject();
         try{
-            obj.addProperty("eccentricity",this.getEccentricity(targetNodeId));
+            obj.addProperty("eccentricity",this.getFlowEccentricity(targetNodeId));
             obj.addProperty("targetNode", targetNodeId);
             obj.addProperty("pathMaxLength", maxValue);
         } catch (Exception ex) {
@@ -85,17 +86,17 @@ public class Eccentricity {
      * Calculates the Eccentricity given a target.
      * @param targetNodeId: The target node to get the centrality.
      */
-    public double getEccentricity(long targetNodeId){
+    public double getFlowEccentricity(long targetNodeId){
         this.maxValue = 0;
+        MaximumFlow mf = MaximumFlow(database);
         Transaction tx = database.beginTx();
         try {
             Node targetNode  = database.getNodeById(targetNodeId);
+            /* Get all other nodes in Graph (ignoring targetNodeId) */
             for (Node n : GlobalGraphOperations.at(database).getAllNodes()){
                 if(n.getId() != targetNodeId){
-                    for (org.neo4j.graphdb.Path p : shortestPath(expanderForAllTypes(Direction.BOTH),maxDepth).findAllPaths(targetNode,n)){
-                        if (p.length() > maxValue) {
-                            maxValue = p.length();
-                        }
+                            maxValue = mf.getMaxFlow(targetNode.getId(),n.getId());
+
                     }
                 }
             }

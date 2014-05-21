@@ -88,6 +88,8 @@ public class EccentricityTest {
             JSONObject obj = new JSONObject(text.toString());
             System.out.println("*********EccentricityJSON: " +
                                obj.optDouble("eccentricity"));
+            System.out.println("*********Path Value JSON: " +
+                               obj.optDouble("pathMaxLength"));
             
         }
         catch(IOException ex){
