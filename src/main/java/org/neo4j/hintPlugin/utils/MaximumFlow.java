@@ -40,6 +40,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -247,34 +248,20 @@ public class MaximumFlow {
             //Search for the maximum flow between a source and sink...
             for(org.neo4j.graphdb.Path p : this.database.traversalDescription()
                 .depthFirst()
-                .relationships(Rels.KNOWS, Direction.BOTH)
+                .evaluator(Evaluators.endNodeIs(Evaluation.INCLUDE_AND_CONTINUE,
+                                                Evaluation.EXCLUDE_AND_CONTINUE,
+                                                this.nSink))
                 .uniqueness(Uniqueness.NODE_PATH)
-                .evaluator(Evaluators.excludeStartPosition())
-                .evaluator(Evaluators.pruneWhereEndNodeIs(this.nSink))
                 .traverse(this.nSource)){
-                //System.out.println(p);
-                for(Relationship r : this.database.traversalDescription()
-                    .depthFirst()
-                    .relationships(Rels.KNOWS, Direction.BOTH)
-                    .uniqueness(Uniqueness.NODE_PATH)
-                    .evaluator(Evaluators.excludeStartPosition())
-                    .evaluator(Evaluators.pruneWhereEndNodeIs(this.nSink))
-                    .traverse(this.nSource).relationships()){
-                    
+                for (Relationship r : p.relationships()) {
                     if (r.hasProperty(flowUUID))
                         if((Double)r.getProperty(flowUUID) < min)
                             flow = (Double)r.getProperty(flowUUID);
+                    //System.out.println("Flow*" + flow);
                 }
                 accumulator = accumulator + flow;
-                // Set up the flow values for the next round...
-                for(Relationship r : this.database.traversalDescription()
-                    .depthFirst()
-                    .relationships(Rels.KNOWS, Direction.BOTH)
-                    .uniqueness(Uniqueness.NODE_PATH)
-                    .evaluator(Evaluators.excludeStartPosition())
-                    .evaluator(Evaluators.pruneWhereEndNodeIs(this.nSink))
-                    .traverse(this.nSource).relationships()){
-                    
+                // Setup the flow values for the next round...
+                for (Relationship r: p.relationships()){
                     if (r.hasProperty(flowUUID))
                         r.setProperty(flowUUID,(Double)r.getProperty(flowUUID)-flow);
                 }
