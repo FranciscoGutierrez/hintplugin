@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 package org.neo4j.mytests;
-
+/*
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -191,4 +191,4 @@ public class MaxflowTest {
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);
         return Client.create(defaultClientConfig);
     }
-}
+}*/

@@ -1,4 +1,4 @@
-/*package org.neo4j.mytests;
+package org.neo4j.mytests;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -33,7 +33,7 @@ public class BetweennessTest {
     private CommunityNeoServer server;
     
     enum MyRelationshipTypes implements RelationshipType {
-        CONTAINED_IN, KNOWS
+        CONTAINED_IN, KNOWS, MAX_FLOW
     }
     
     @Before
@@ -62,12 +62,19 @@ public class BetweennessTest {
             Node c = db.createNode();
             Node d = db.createNode();
             Node e = db.createNode();
-            a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",0.1);
-            a.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight",0.3);
-            a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",0.2);
-            b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight",0.3);
-            c.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight",0.2);
-            c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight",0.2);
+            
+            a.setProperty("flow",4);
+            b.setProperty("flow",2);
+            c.setProperty("flow",2);
+            d.setProperty("flow",1);
+            e.setProperty("flow",0);
+            
+            a.createRelationshipTo(c, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.1);
+            a.createRelationshipTo(b, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.3);
+            a.createRelationshipTo(d, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.2);
+            b.createRelationshipTo(c, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.3);
+            c.createRelationshipTo(d, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.2);
+            c.createRelationshipTo(e, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.2);
             
         } catch (Exception e) {
             System.err.println("Exception Error: MaxflowTest.shouldReturnMaxFlow: " + e);
@@ -79,11 +86,11 @@ public class BetweennessTest {
         URL uriArray[] = new URL[5];
         String serverBaseUri = server.baseUri().toString();
         try{
-            String q1 = serverBaseUri + "hintplugin/centralities/flowbetweenness/0";
-            String q2 = serverBaseUri + "hintplugin/centralities/flowbetweenness/1";// 0.3599
-            String q3 = serverBaseUri + "hintplugin/centralities/flowbetweenness/2";
-            String q4 = serverBaseUri + "hintplugin/centralities/flowbetweenness/3";
-            String q5 = serverBaseUri + "hintplugin/centralities/flowbetweenness/4";
+            String q1 = serverBaseUri + "hintplugin/centrality/flowbetweenness/0";
+            String q2 = serverBaseUri + "hintplugin/centrality/flowbetweenness/1";// 0.3599
+            String q3 = serverBaseUri + "hintplugin/centrality/flowbetweenness/2";
+            String q4 = serverBaseUri + "hintplugin/centrality/flowbetweenness/3";
+            String q5 = serverBaseUri + "hintplugin/centrality/flowbetweenness/4";
             
             uriArray[0] = new URL(q1);
             uriArray[1] = new URL(q2);
@@ -109,7 +116,7 @@ public class BetweennessTest {
                     text.append(line + " ");
                 }
                 JSONObject obj = new JSONObject(text.toString());
-                System.out.println("*********betweenness-json: " + obj.optDouble("flow-betweenness"));
+                System.out.println("*********betweenness-json: " + obj.optDouble("flowBetweenness"));
             } catch(Exception ex) {
                 System.out.println("MaxflowTest Exception: " + ex);
             }
@@ -122,4 +129,4 @@ public class BetweennessTest {
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);
         return Client.create(defaultClientConfig);
     }
-}*/
+}

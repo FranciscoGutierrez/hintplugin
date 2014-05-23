@@ -99,28 +99,24 @@ public class FlowBetweenness {
         try {
             Node targetNode = database.getNodeById(targetNodeId);
             for(Relationship rel : this.database.traversalDescription()
-                .depthFirst()
-                .evaluator(Evaluators.endNodeIs(Evaluation.EXCLUDE_AND_CONTINUE,
-                                                Evaluation.INCLUDE_AND_CONTINUE,
-                                                targetNode))
+                .breadthFirst()
                 .relationships(Rels.MAX_FLOW)
                 .evaluator(Evaluators.excludeStartPosition())
-                .uniqueness(Uniqueness.NODE_PATH)
                 .traverse(targetNode)
                 .relationships()) {
                 if (rel.hasProperty("maxflow"))
-                    maxFlowSum = rel.getProperty("maxflow") + maxFlowSum;
+                    maxFlowSum = (Double)rel.getProperty("maxflow") + maxFlowSum;
             }
-            if (targetNode.hasProperty("maxflow"))
-                flowSum = targetNode.getProperty("flow");
+            if (targetNode.hasProperty("flow"))
+                flowSum = Double.parseDouble(targetNode.getProperty("flow").toString());
             betweenness = flowSum/maxFlowSum;
+            tx.success();
         }catch (Exception e) {
-            System.err.println("Exception Error: FlowBetweenness Class: " + e);
+            System.err.println("**flowBetweenness: " + e);
             tx.failure();
         } finally {
-            tx.success();
             tx.close();
         }
-        return Math.round(Math.abs(betweenness)*100.0)/100.0;;
+        return Math.round(Math.abs(betweenness) * 100.0)/100.0;
     }
 }

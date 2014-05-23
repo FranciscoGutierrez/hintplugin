@@ -174,8 +174,24 @@ public class MaximumFlow {
                                                 Evaluation.EXCLUDE_AND_CONTINUE,
                                                 this.nSink))
                 .relationships(Rels.HAS_TERM)
-                .evaluator(Evaluators.toDepth(5)) //Adjust the depth.
+                /* The next line makes a mess,
+                 * :::Theory:::
+                 * If you have a sparsely connected graph, and apply
+                 * relationship-uniqueness, you have to explore very very long
+                 * paths to really find all the unique relationships in your
+                 * graph, so you have to meander back and forth until you find
+                 * the last globally unique relationship.
+                 * Thanks @Michael Hunger (Neo4j Team).
+                 *
+                 * The solution is to write a custom Uniqueness overriding
+                 * the method.
+                 * For a future version please check: http://goo.gl/f8EP4U
+                 */
                 .uniqueness(Uniqueness.NODE_PATH)
+                /*
+                 * Let's solve (by now) the issue by just adjusting the depth.
+                 */
+                .evaluator(Evaluators.toDepth(5))
                 .traverse(this.nSource)) {
                 //Getting the min value from each path...
                 for (Relationship r : p.relationships()) {
