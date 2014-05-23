@@ -93,7 +93,7 @@ public class FlowCloseness {
                        && (source.getId() != targetNodeId)
                        && (sink.getId() != targetNodeId)){
                         //Running Thread smoothly...
-                        maxflowObj.getMaxFlow(source.getId(),sink.getId(),targetNodeId);
+                        maxflowObj.getMaxFlow(source.getId(),sink.getId());
                         flowSum     =  maxflowObj.getTargetNodeFlow() + flowSum;
                     }
                 }

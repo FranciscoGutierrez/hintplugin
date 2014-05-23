@@ -34,13 +34,20 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Uniqueness;
 import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.hintplugin.utils.MaximumFlow;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Runnable;
 import org.json.JSONObject;
+import java.lang.Math;
 
 /**
  * Flow Betweenness Class
@@ -51,7 +58,16 @@ import org.json.JSONObject;
 @Path("/flowbetweenness")
 public class FlowBetweenness {
     private final GraphDatabaseService database;
-    public FlowBetweenness( @Context GraphDatabaseService database ) {
+    /*
+     * The enum listing all the relationship types allowed in database.
+     */
+    private enum Rels implements RelationshipType {
+        KNOWS, HAS_TERM, MAX_FLOW
+    }
+    /*
+     * The Public Constructor...
+     */
+    public FlowBetweenness(@Context GraphDatabaseService database) {
         this.database = database;
     }
     /*
@@ -72,7 +88,7 @@ public class FlowBetweenness {
         return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
     }
     /*
-     * Calculates the FlowBetweeness given a source and sink nodes.
+     * Calculates the FlowBetweeness given a targetNode.
      * @param target: The target node to get the centrality...
      */
     public double getFlowBetweenness(long targetNodeId){
@@ -82,21 +98,21 @@ public class FlowBetweenness {
         Transaction tx = database.beginTx();
         try {
             Node targetNode = database.getNodeById(targetNodeId);
-            MaximumFlow maxflowObj = new MaximumFlow(database);
-            Iterable <Node> allNodes = GlobalGraphOperations.at(database).getAllNodes();
-            List <Double> maxflows = new ArrayList<Double>();
-            //Getting all the nodes...
-            for(Node source: allNodes){
-                for(Node sink: allNodes){
-                    if((source.getId()!= sink.getId())
-                       && (source.getId() != targetNodeId)
-                       && (sink.getId() != targetNodeId)){
-                        //Running Thread smoothly... ???
-                        maxFlowSum = maxflowObj.getMaxFlow(source.getId(),sink.getId(),targetNodeId) + maxFlowSum;
-                        flowSum    = maxflowObj.getTargetNodeFlow() + flowSum;
-                    }
-                }
+            for(Relationship rel : this.database.traversalDescription()
+                .depthFirst()
+                .evaluator(Evaluators.endNodeIs(Evaluation.EXCLUDE_AND_CONTINUE,
+                                                Evaluation.INCLUDE_AND_CONTINUE,
+                                                targetNode))
+                .relationships(Rels.MAX_FLOW)
+                .evaluator(Evaluators.excludeStartPosition())
+                .uniqueness(Uniqueness.NODE_PATH)
+                .traverse(targetNode)
+                .relationships()) {
+                if (rel.hasProperty("maxflow"))
+                    maxFlowSum = rel.getProperty("maxflow") + maxFlowSum;
             }
+            if (targetNode.hasProperty("maxflow"))
+                flowSum = targetNode.getProperty("flow");
             betweenness = flowSum/maxFlowSum;
         }catch (Exception e) {
             System.err.println("Exception Error: FlowBetweenness Class: " + e);
@@ -105,9 +121,6 @@ public class FlowBetweenness {
             tx.success();
             tx.close();
         }
-        return betweenness;
-    }
-    private double getFlowBetweenness(long targetNodeId, long nodeLocalNetwork){
-        return 0;
+        return Math.round(Math.abs(betweenness)*100.0)/100.0;;
     }
 }
