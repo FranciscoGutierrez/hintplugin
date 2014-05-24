@@ -1,5 +1,5 @@
 package org.neo4j.mytests;
-
+/*
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -67,7 +67,7 @@ public class BetweennessTest {
             b.setProperty("flow",2);
             c.setProperty("flow",2);
             d.setProperty("flow",1);
-            e.setProperty("flow",0);
+            e.setProperty("flow",1);
             
             a.createRelationshipTo(c, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.1);
             a.createRelationshipTo(b, MyRelationshipTypes.MAX_FLOW).setProperty("maxflow",0.3);
@@ -129,4 +129,4 @@ public class BetweennessTest {
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);
         return Client.create(defaultClientConfig);
     }
-}
+}*/
