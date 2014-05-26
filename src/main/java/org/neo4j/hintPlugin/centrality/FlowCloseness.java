@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Francisco G.
+ * Copyright (c) 2014 Francisco G. (fsalvador23@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,17 +31,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.neo4j.graphdb.*;
-import org.neo4j.tooling.GlobalGraphOperations;
-import org.neo4j.hintplugin.utils.MaximumFlow;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Uniqueness;
+import org.neo4j.tooling.GlobalGraphOperations;
 import java.lang.Runnable;
-
 import org.json.JSONObject;
+import java.lang.Math;
 /**
  * Flow Closeness Class
  *
@@ -52,13 +54,26 @@ import org.json.JSONObject;
 @Path("/flowcloseness")
 public class FlowCloseness {
     private final GraphDatabaseService database;
+    /*
+     * The enum listing all the relationship types allowed in database.
+     */
+    private enum Rels implements RelationshipType {
+        KNOWS, HAS_TERM, MAX_FLOW
+    }
+    /*
+     * The Public Constructor passing the database service...
+     */
     public FlowCloseness( @Context GraphDatabaseService database ) {
         this.database = database;
     }
     /*
-     * Flow Betweeness: RESTful Service...
-     * Calculates Flow Betweness in the Current Database.
-     * @param target: the id of the target to get the centrality value.
+     * Flow Closeness: RESTful Service...
+     * Calculates Flow Closeness Given a Database
+     * *** WARNING: Compute Process Overhead ***
+     * This method iterates all over the database to set the closeness value
+     * to all the nodes in the graph. Please consider this overhead when calling
+     * this service.
+     * @param target: the ID of the target to get the closeness value.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -66,8 +81,8 @@ public class FlowCloseness {
     public Response flowCloseness(@PathParam("target") long target) {
         JSONObject obj = new org.json.JSONObject();
         try{
-            obj.put("flow-closeness", this.getFlowCloseness(target));
-            obj.put("target-node",      target);
+            obj.put("targetNode",   target);
+            obj.put("flowCloseness",this.getFlowCloseness(target));
         } catch (Exception ex) {
             System.err.println("centralities.FlowCloseness Class: " + ex);
         }
@@ -80,35 +95,39 @@ public class FlowCloseness {
     public double getFlowCloseness(long targetNodeId){
         double flowSum    = 0.0;
         double closeness  = 0.0;
+        double targetCloseness = 0.0;
         Transaction tx = database.beginTx();
         try {
-            Node                    targetNode  = database.getNodeById(targetNodeId);
-            MaximumFlow             maxflowObj  = new MaximumFlow(database);
-            Iterable    <Node>      allNodes    = GlobalGraphOperations.at(database).getAllNodes();
-            List        <Double>    maxflows    = new ArrayList<Double>();
-            //Getting all the nodes...
-            for(Node source: allNodes){
-                for(Node sink: allNodes){
-                    if((source.getId()!= sink.getId())
-                       && (source.getId() != targetNodeId)
-                       && (sink.getId() != targetNodeId)){
-                        //Running Thread smoothly...
-                        maxflowObj.getMaxFlow(source.getId(),sink.getId());
-                        flowSum     =  maxflowObj.getTargetNodeFlow() + flowSum;
-                    }
-                }
+            Node targetNode  = database.getNodeById(targetNodeId);
+            //Get the overall summatory of the flow though all nodes...
+            for(Node currentNode : this.database.traversalDescription()
+                .breadthFirst()
+                .relationships(Rels.MAX_FLOW)
+                .traverse(targetNode)
+                .nodes()) {
+                if (currentNode.hasProperty("flow"))
+                    flowSum = (Double)currentNode.getProperty("flow") + flowSum;
             }
-            closeness = flowSum;
+            //Set closeness value for all nodes...
+            for(Node currentNode : this.database.traversalDescription()
+                .breadthFirst()
+                .relationships(Rels.MAX_FLOW)
+                .traverse(targetNode)
+                .nodes()) {
+                closeness = 0.0;
+                if (currentNode.hasProperty("flow"))
+                    closeness = (Double)currentNode.getProperty("flow")/flowSum;
+                if( currentNode.getId() == targetNodeId)
+                    targetCloseness = closeness;
+                currentNode.setProperty("closeness", closeness);
+            }
+            tx.success();
         }catch (Exception e) {
             System.err.println("Exception Error: FlowBetweenness Class: " + e);
             tx.failure();
         } finally {
-            tx.success();
             tx.close();
         }
-        return closeness;
-    }
-    private double getFlowCloseness(long targetNodeId, long nodeLocalNetwork){
-        return 0;
+        return Math.round(Math.abs(targetCloseness) * 100.0)/100.0;
     }
 }

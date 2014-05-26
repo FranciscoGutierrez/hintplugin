@@ -49,8 +49,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 /**
- * Eccentricity Class: This can be used to calculate eccentricity of nodes.
- * Is defined as the maximum distance to any other node in the graph.
+ *
+ * Eccentricity is defined as the maximum distance 
+ * to any other node in the graph.
+ *
  * @author  Francisco Gutiérrez. (fsalvador23@gmail.com)
  * @version 0.1
  * @since 2014-05-01
