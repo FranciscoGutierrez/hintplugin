@@ -84,14 +84,17 @@ public class Predbag {
      * @param node:       The target node.
      */
     private double getPredbag(long node){
+        this.numberOfWords = 0.0;
         double predbag = 0.0;
         double degree  = 0.0;
         Transaction tx = database.beginTx();
         try {
             this.node = database.getNodeById(node);
             for (Relationship r: this.node.getRelationships()){
-                predbag = new Double(r.getProperty("weight").toString()) + predbag;
-                degree++;
+                if(r.hasProperty("weight")){
+                    predbag = new Double(r.getProperty("weight").toString()) + predbag;
+                    degree++;
+                }
             }
             predbag = predbag/degree;
             this.numberOfWords = degree;

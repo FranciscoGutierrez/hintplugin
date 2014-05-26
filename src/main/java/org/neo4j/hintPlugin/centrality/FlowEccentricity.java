@@ -91,16 +91,18 @@ public class FlowEccentricity {
      */
     public double getFlowEccentricity(long targetNodeId){
         this.maxValue = 0;
-        MaximumFlow mf = new MaximumFlow(database);
         Transaction tx = database.beginTx();
         try {
             Node targetNode  = database.getNodeById(targetNodeId);
             /* Get all other nodes in Graph (ignoring targetNodeId) */
-            for (Node n : GlobalGraphOperations.at(database).getAllNodes()){
-                if(n.getId() != targetNodeId){
-                    maxValue = mf.getMaxFlow(targetNode.getId(),n.getId());
+            for (Relationship rel : targetNode.getRelationships()){
+                if(rel.hasProperty("maxflow")){
+                    if((Double)rel.getProperty("maxflow") > this.maxValue){
+                        this.maxValue = (Double)rel.getProperty("maxflow");
+                    }
                 }
             }
+            targetNode.setProperty("floweccentricity",this.maxValue);
         }catch (Exception e) {
             System.err.println("Exception Error: FlowBetweenness Class: " + e);
             tx.failure();

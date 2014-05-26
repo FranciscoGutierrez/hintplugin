@@ -110,7 +110,7 @@ public class FlowBetweenness {
             if (targetNode.hasProperty("flow"))
                 flowSum = Double.parseDouble(targetNode.getProperty("flow").toString());
             betweenness = Math.round(Math.abs(flowSum/maxFlowSum) * 100.0)/100.0;
-            targetNode.setProperty("betweenness",betweenness);
+            targetNode.setProperty("flowbetweenness",betweenness);
             tx.success();
         }catch (Exception e) {
             System.err.println("**flowBetweenness: " + e);

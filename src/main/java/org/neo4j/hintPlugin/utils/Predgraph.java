@@ -82,14 +82,17 @@ public class Predgraph {
      * @param threshold:    the threshold that must be equal or up to create a relationship.
      */
     private double getPredgraph(long node){
+        this.numberOfWords  = 0.0;
         double predgraph    = 0.0;
         double degree       = 0.0;
         Transaction tx = database.beginTx();
         try {
             this.node = database.getNodeById(node);
             for (Relationship r: this.node.getRelationships()){
-                predgraph = new Double(r.getProperty("weight").toString()) + predgraph;
-                degree++;
+                if(r.hasProperty("weight")){
+                    predgraph = new Double(r.getProperty("weight").toString()) + predgraph;
+                    degree++;
+                }
             }
             this.numberOfWords = degree;
             tx.success();

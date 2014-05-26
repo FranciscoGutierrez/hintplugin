@@ -30,18 +30,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.helpers.collection.IteratorUtil;
-
 import java.lang.Math;
 
 @Path("/wpoi")
@@ -84,7 +81,7 @@ public class WPOI {
         double wpoi = 0.0;
         double userAvgPred = 0.0;
         double poiAvgPred  = 0.0;
-            wpoi = (userAvgPred + poiAvgPred)/2;
+        wpoi = (userAvgPred + poiAvgPred)/2;
         return wpoi;
     }
 }
