@@ -188,9 +188,6 @@ public class MaximumFlow {
                  * For a future version please check: http://goo.gl/f8EP4U
                  */
                 .uniqueness(Uniqueness.NODE_PATH)
-                /*
-                 * Let's solve (by now) the issue by just adjusting the depth.
-                 */
                 .evaluator(Evaluators.toDepth(5))
                 .traverse(this.nSource)) {
                 //Getting the min value from each path...
