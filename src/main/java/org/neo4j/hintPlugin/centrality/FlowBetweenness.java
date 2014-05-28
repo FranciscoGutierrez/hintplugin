@@ -37,6 +37,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
@@ -95,9 +97,17 @@ public class FlowBetweenness {
         double maxFlowSum   = 0.0;
         double flowSum      = 0.0;
         double betweenness  = 0.0;
+        double nodeCount    = 0.0;
+        final Label poiLabel = DynamicLabel.label("Poi");
+        final Label termLabel = DynamicLabel.label("Term");
         Transaction tx = database.beginTx();
         try {
             Node targetNode = database.getNodeById(targetNodeId);
+            for(Node n : GlobalGraphOperations.at(database).getAllNodes()){
+                if (n.hasLabel(poiLabel) || n.hasLabel(termLabel)){
+                    nodeCount++;
+                }
+            }
             for(Relationship rel : this.database.traversalDescription()
                 .breadthFirst()
                 .relationships(Rels.MAX_FLOW)
@@ -109,7 +119,8 @@ public class FlowBetweenness {
             }
             if (targetNode.hasProperty("flow"))
                 flowSum = Double.parseDouble(targetNode.getProperty("flow").toString());
-            betweenness = Math.round(Math.abs(flowSum/maxFlowSum) * 100.0)/100.0;
+            betweenness = ((2 * flowSum/maxFlowSum)/(Math.pow(nodeCount,2)-(3*165)+2))*1000;
+            betweenness = Math.round(Math.abs(betweenness) * 100.0)/100.0;
             targetNode.setProperty("flowbetweenness",betweenness);
             tx.success();
         }catch (Exception e) {
@@ -118,6 +129,7 @@ public class FlowBetweenness {
         } finally {
             tx.close();
         }
+        // Return Freeman's normalized Flow Betweenness...
         return betweenness;
     }
 }

@@ -95,6 +95,7 @@ public class Predgraph {
                 }
             }
             this.numberOfWords = degree;
+            this.node.setProperty("predgraph",predgraph);
             tx.success();
         } catch (Exception e) {
             System.out.println("Fail, This happened: " + e);

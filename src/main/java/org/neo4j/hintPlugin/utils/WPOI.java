@@ -77,11 +77,28 @@ public class WPOI {
      * @param node_b:       the end node to calculate similarity.
      * @param threshold:    the threshold that must be equal or up to create a relationship.
      */
-    private double getWPOI(long node){
+    private double getWPOI(long targetNodeId){
         double wpoi = 0.0;
-        double userAvgPred = 0.0;
-        double poiAvgPred  = 0.0;
-        wpoi = (userAvgPred + poiAvgPred)/2;
+        double similaritySum = 0.0;
+        double similarityCount = 0.0;
+        Transaction tx = database.beginTx();
+        try {
+            Node targetNode  = database.getNodeById(targetNodeId);
+            for (Relationship rel : targetNode.getRelationships()){
+                if(rel.hasProperty("similarity")){
+                    similaritySum += (Double)rel.getProperty("similarity");
+                    similarityCount++;
+                }
+            }
+            if(targetNode.hasProperty("predgraph")){
+                wpoi = (similaritySum/similarityCount) * (Double)targetNode.getProperty("predgraph");
+            }
+            targetNode.setProperty("wpoi",wpoi);
+            tx.success();
+        } catch (Exception e){
+            System.out.println(e);
+        } finally {
+        }
         return wpoi;
     }
 }
