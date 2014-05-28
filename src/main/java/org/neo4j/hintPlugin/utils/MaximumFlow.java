@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import org.json.JSONObject;
+import org.json.JSONObject; // @Deprecated, moving to Gson.
 import java.lang.Math;
 
 /**
@@ -70,18 +70,21 @@ public class MaximumFlow {
     private Node nSink;
     private UUID uuid;
     
+    /** 
+     *  The relationship types that are allowed for this class...
+     */
     private enum Rels implements RelationshipType {
-        CONTAINED_IN, KNOWS, HAS_TERM, MAX_FLOW
+        HAS_TERM, MAX_FLOW
     }
     
-    /*
+    /**
      * The Public Constructor of this class.
      * @param database: The GraphDatabaseService object needed to feed this class...
      */
     public MaximumFlow(@Context GraphDatabaseService database) {
         this.database = database;
     }
-    /*
+    /**
      * Maximum Flow: RESTful Service...
      * @param source: the id of the source node.
      * @param   sink: the id of the sink node.
@@ -96,12 +99,13 @@ public class MaximumFlow {
         obj.put("sink-id",  sink);
         obj.put("maxflow",  this.getMaxFlow(source,sink));
         return Response.ok(obj.toString(), MediaType.APPLICATION_JSON)
-        .header("X-Stream", "true")
+        .header("X-Stream", "true") //Enables large and huge operations in server to avoid crashing.
         .build();
     }
-    /*
-     * Looks for all the found paths and assings them an unique temp property
+    /**
+     * Iterates over all the found paths and ASSINGS them an unique temp property
      * to calculate the maxflow.
+     * @param uuid the UUID to get the unique property from.
      */
     private void assingTempProperty(UUID uuid){
         TraversalDescription tempTraversal  = this.database.traversalDescription()
@@ -123,8 +127,10 @@ public class MaximumFlow {
             tx.close();
         }
     }
-    /*
-     * Looks for all the found paths and removes the temp Property
+    /**
+     * Iterates over all the found paths and REMOVES the unique temp property
+     * used to calculate the maxflow.
+     * @param uuid the UUID to get the unique property from.
      */
     private void removeTempProperty(final UUID uuid){
         TraversalDescription tempTraversal  = this.database.traversalDescription()
@@ -146,11 +152,11 @@ public class MaximumFlow {
             tx.close();
         }
     }
-    /*
+    /**
      * Calculates the MaximumFlow given a source and a sink.
-     * ** Please note that in order to avoid infinite augmenting path search
+     * ** Please note that in order to avoid infinite Augmenting Path search
      *    we have defined a max depth through the path.
-     *    This means, the more depth, the more accurate, but more expensive ***
+     *    This means, the more depth, the more accurate, but more the expensive ***
      * @param source    the source node id
      * @param sink      the sink node id
      * @return double   as the maximum flow value.
@@ -174,18 +180,20 @@ public class MaximumFlow {
                                                 Evaluation.EXCLUDE_AND_CONTINUE,
                                                 this.nSink))
                 .relationships(Rels.HAS_TERM)
-                /* The next line makes a mess,
-                 * :::Theory:::
-                 * If you have a sparsely connected graph, and apply
-                 * relationship-uniqueness, you have to explore very very long
-                 * paths to really find all the unique relationships in your
-                 * graph, so you have to meander back and forth until you find
-                 * the last globally unique relationship.
-                 * Thanks @Michael Hunger (Neo4j Team).
+                /** The next line is what makes the proccess expensive,
+                 *  because it searches for "Unique Augmenting Paths".
+                 *  :::Theory:::
+                 *  If you have a sparsely connected graph, and apply
+                 *  relationship-uniqueness, you have to explore very very long
+                 *  paths to really find all the unique relationships in your
+                 *  graph, so you have to meander back and forth until you find
+                 *  the last globally unique relationship.
+                 *  Thanks @Michael Hunger (Neo4j Team).
                  *
-                 * The solution is to write a custom Uniqueness overriding
-                 * the method.
-                 * For a future version please check: http://goo.gl/f8EP4U
+                 *  The solution is to write a custom Uniqueness overriding
+                 *  the method.
+                 *  For a future version and more info,
+                 *  please check: http://goo.gl/f8EP4U
                  */
                 .uniqueness(Uniqueness.NODE_PATH)
                 .evaluator(Evaluators.toDepth(5))
@@ -226,10 +234,9 @@ public class MaximumFlow {
         }
         return Math.round(Math.abs(accumulator)*100.0)/100.0;
     }
-    /*
-     * Returns the node flow through a node (Deprecated)
+    /**
+     * Returns the flow given a source and sink through a node
      */
-    @Deprecated
     public double getTargetNodeFlow(){
         return this.targetNodeFlow;
     }
