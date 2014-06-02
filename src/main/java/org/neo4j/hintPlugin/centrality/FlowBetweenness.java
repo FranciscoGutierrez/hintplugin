@@ -54,27 +54,29 @@ import java.lang.Math;
 /**
  * Flow Betweenness Class
  * @author  Francisco Gutiérrez. (fsalvador23@gmail.com)
+ * @proyect Reaumobile (Universidad de las Américas Puebla Team)  http://ict.udlap.mx/
  * @version 0.1
  * @since 2014-05-01
  */
 @Path("/flowbetweenness")
 public class FlowBetweenness {
     private final GraphDatabaseService database;
-    /*
-     * The enum listing all the relationship types allowed in database.
+    
+    /**
+     * The enum listing all the relationship types allowed in this class.
      */
     private enum Rels implements RelationshipType {
-        KNOWS, HAS_TERM, MAX_FLOW
+        MAX_FLOW
     }
-    /*
-     * The Public Constructor...
+    /**
+     * The Public Constructor to get the Database Service
      */
     public FlowBetweenness(@Context GraphDatabaseService database) {
         this.database = database;
     }
-    /*
-     * Flow Betweeness: RESTful Service...
-     * @param target: the id of the target to get the centrality value.
+    /**
+     * Flow Betweeness: GET RESTful Service...
+     * @param target: The long id of the node to get the centrality value.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -89,16 +91,16 @@ public class FlowBetweenness {
         }
         return Response.ok(obj.toString(), MediaType.APPLICATION_JSON).build();
     }
-    /*
+    /**
      * Calculates the FlowBetweeness given a targetNode.
-     * @param target: The target node to get the centrality...
+     * @param target: The long id of the target node.
      */
     public double getFlowBetweenness(long targetNodeId){
         double maxFlowSum   = 0.0;
         double flowSum      = 0.0;
         double betweenness  = 0.0;
         double nodeCount    = 0.0;
-        final Label poiLabel = DynamicLabel.label("Poi");
+        final Label poiLabel  = DynamicLabel.label("Poi");
         final Label termLabel = DynamicLabel.label("Term");
         Transaction tx = database.beginTx();
         try {
@@ -119,6 +121,7 @@ public class FlowBetweenness {
             }
             if (targetNode.hasProperty("flow"))
                 flowSum = Double.parseDouble(targetNode.getProperty("flow").toString());
+            // Freeman's normalized Flow Betweenness...
             betweenness = ((2 * flowSum/maxFlowSum)/(Math.pow(nodeCount,2)-(3*165)+2))*1000;
             betweenness = Math.round(Math.abs(betweenness) * 100.0)/100.0;
             targetNode.setProperty("flowbetweenness",betweenness);
@@ -129,7 +132,6 @@ public class FlowBetweenness {
         } finally {
             tx.close();
         }
-        // Return Freeman's normalized Flow Betweenness...
         return betweenness;
     }
 }

@@ -51,13 +51,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import org.json.JSONObject; // @Deprecated, moving to Gson.
+import org.json.JSONObject;
 import java.lang.Math;
 
 /**
  * Maximum Flow Class
  * Returns the Maximum flow value within a graph given a source and sink nodes.
  * @author  Francisco Gutiérrez. (fsalvador23@gmail.com)
+ * @proyect Reaumobile (Universidad de las Américas Puebla Team)  http://ict.udlap.mx/
  * @version 0.1
  * @since 2014-05-01
  */

@@ -30,11 +30,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.Relationship;
@@ -50,13 +48,13 @@ public class Predgraph {
     private final GraphDatabaseService database;
     private Node node;
     private double numberOfWords;
-    /*
+    /**
      * The Public constructor.
      */
     public Predgraph(@Context GraphDatabaseService database) {
         this.database = database;
     }
-    /*
+    /**
      * The RESTful Method to be called to retrieve Similarity Between two nodes.
      * @param node: the target node.
      */
@@ -75,7 +73,7 @@ public class Predgraph {
         }
         return Response.ok(gson.toJson(obj), MediaType.APPLICATION_JSON).build();
     }
-    /*
+    /**
      * Calculates Similarity Between Two Nodes, Based on Jaccard Index.
      * @param node_a:       the start node to calculate similarity.
      * @param node_b:       the end node to calculate similarity.
