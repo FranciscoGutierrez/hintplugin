@@ -30,5 +30,3 @@ What can I do?
 - Similarity between nodes.
 - Freeman Centralities.
 - Freeman Flow-Centralities.
-
-**Warning...** Still under development...
