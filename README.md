@@ -31,3 +31,5 @@ What can I do?
 - Similarity between nodes.
 - Freeman Centralities.
 - Freeman Flow-Centralities.
+
+All the tests are based on Freeman Centrality graphs.
