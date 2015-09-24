@@ -1,5 +1,5 @@
-/*package org.neo4j.mytests;
-
+package org.neo4j.mytests;
+/*
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -28,12 +28,12 @@ import java.net.URL;
 public class SimilarityTest {
     private GraphDatabaseAPI db;
     private CommunityNeoServer server;
-    
+
     enum MyRelationshipTypes implements RelationshipType{
         CONTAINED_IN, KNOWS
     }
-    
-    
+
+
     @Before
     public void before() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);
@@ -45,7 +45,7 @@ public class SimilarityTest {
         server.start();
         db = server.getDatabase().getGraph();
     }
-    
+
     @After
     public void after() {
         server.stop();
@@ -65,14 +65,14 @@ public class SimilarityTest {
         d.setProperty("name", "Scott");
         e.setProperty("name", "Kevin");
         f.setProperty("name", "Matt");
-        
+
         a.createRelationshipTo(c, MyRelationshipTypes.KNOWS);
         a.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
         a.createRelationshipTo(e, MyRelationshipTypes.KNOWS);
         b.createRelationshipTo(e, MyRelationshipTypes.KNOWS);
         b.createRelationshipTo(d, MyRelationshipTypes.KNOWS);
         b.createRelationshipTo(f, MyRelationshipTypes.KNOWS);
-        
+
         tx.success();
         tx.close();
         int statusCode = 0;

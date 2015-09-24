@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 package org.neo4j.mytests;
-/*
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -54,12 +54,12 @@ import org.json.JSONObject;
 public class MaxflowTest {
     private GraphDatabaseAPI db;
     private CommunityNeoServer server;
-    
+
     enum MyRelationshipTypes implements RelationshipType {
         CONTAINED_IN, KNOWS, HAS_TERM
     }
-    
-    
+
+
     @Before
     public void before() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);
@@ -71,12 +71,12 @@ public class MaxflowTest {
         server.start();
         db = server.getDatabase().getGraph();
     }
-    
+
     @After
     public void after() {
         server.stop();
     }
-    
+
     @Test
     public void shouldReturnMaxFlow() {
         Transaction tx = db.beginTx();
@@ -92,28 +92,28 @@ public class MaxflowTest {
             b.createRelationshipTo(c, MyRelationshipTypes.HAS_TERM).setProperty("weight","3.0");
             c.createRelationshipTo(d, MyRelationshipTypes.HAS_TERM).setProperty("weight","2.0");
             c.createRelationshipTo(e, MyRelationshipTypes.HAS_TERM).setProperty("weight","2.0");
-            
+
 //            b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight","1.0");
 //            c.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight","3.0");
 //            e.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 //            d.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight","3.0");
 //            a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 //            b.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
-//            
+//
 //            c.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight","1.0");
 //            b.createRelationshipTo(a, MyRelationshipTypes.KNOWS).setProperty("weight","3.0");
 //            e.createRelationshipTo(a, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 //            a.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight","3.0");
 //            d.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 //            c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
-//            
+//
 //            b.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight","1.0");
 //            c.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight","3.0");
 //            e.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 //            d.createRelationshipTo(c, MyRelationshipTypes.KNOWS).setProperty("weight","3.0");
 //            a.createRelationshipTo(d, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 //            b.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
-//            
+//
 //            c.createRelationshipTo(b, MyRelationshipTypes.KNOWS).setProperty("weight","1.0");
 //            b.createRelationshipTo(a, MyRelationshipTypes.KNOWS).setProperty("weight","3.0");
 //            e.createRelationshipTo(a, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
@@ -121,13 +121,13 @@ public class MaxflowTest {
 //            d.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 //            c.createRelationshipTo(e, MyRelationshipTypes.KNOWS).setProperty("weight","2.0");
 
-            
+
 //            Iterable <Node> allNodeList = GlobalGraphOperations.at(db).getAllNodes();
-//            
+//
 //            for (Node n : allNodeList) {
 //                System.out.println("****The node is: " + n.getId());
 //            }
-            
+
         } catch (Exception e) {
             System.err.println("Exception Error: MaxflowTest.shouldReturnMaxFlow: " + e);
             tx.failure();
@@ -135,7 +135,7 @@ public class MaxflowTest {
             tx.success();
             tx.close();
         }
-        
+
         String serverBaseUri = server.baseUri().toString();
         URL uriArray[] = new URL[6];
         String q1 = serverBaseUri + "hintplugin/utils/maximumflow/0/2"; // a-c 6
@@ -144,14 +144,14 @@ public class MaxflowTest {
         String q4 = serverBaseUri + "hintplugin/utils/maximumflow/2/3"; // c-d 4
         String q5 = serverBaseUri + "hintplugin/utils/maximumflow/2/4"; // c-e 2
         String q6 = serverBaseUri + "hintplugin/utils/maximumflow/3/4"; // d-e 2
-        
+
 //        String qa = serverBaseUri + "hintplugin/utils/maximumflow/1/0"; // a-c 6
 //        String qb = serverBaseUri + "hintplugin/utils/maximumflow/1/2"; // a-d 4
 //        String qc = serverBaseUri + "hintplugin/utils/maximumflow/1/3"; // a-e 2
 //        String qd = serverBaseUri + "hintplugin/utils/maximumflow/1/4"; // c-d 4
 //        String qe = serverBaseUri + "hintplugin/utils/maximumflow/1/4"; // c-e 2
 //        String qf = serverBaseUri + "hintplugin/utils/maximumflow/1/4"; // d-e 2
-        
+
         try{
             uriArray[0] = new URL(q1);
             uriArray[1] = new URL(q2);
@@ -185,10 +185,10 @@ public class MaxflowTest {
         }
         assertEquals("200","200");
     }
-    
+
     private Client jerseyClient() {
         DefaultClientConfig defaultClientConfig = new DefaultClientConfig();
         defaultClientConfig.getClasses().add(JacksonJsonProvider.class);
         return Client.create(defaultClientConfig);
     }
-}*/
+}
