@@ -1,27 +1,28 @@
 HintPlugin v0.1
 ==========
-An unmanaged extension that enables Neo4j (2.0.1) to give recommeder system functionality.
+An unmanaged extension that enables Neo4j (2.0.1) to give recommender system functionality.
+
+Please note that this extesion is intended to give a RESTful API support, however you can use this library through embedded mode.
 
 Setting everything up!
 ----------------------
 From terminal use Maven to build the project:
-```
+```bash
 mvn clean package
 ```  
-Copy the generated **JAR File** at...
+Copy the generated **JAR File** and paste it into neo4j plugins.
 ```
 hintplugin/target/
 ```
-...into **Neo4j Plugins Directory**.  
-```
-neo4j/plugins/  
-```
-**Warning:** Before continue stop the Neo4j Instance!  
+
 Then, in **conf/neo4j-server.properties** copy/paste the following:  
 ```  
 org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.hintplugin.utils=/hintplugin/utils  
 ```  
-**Start** Neo4j Sever...  
+Go to your neo4j folder and restart neo4j server:
+```bash
+neo4j start
+```
 Have Fun!
 
 
